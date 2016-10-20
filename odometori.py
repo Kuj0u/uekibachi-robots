@@ -3,6 +3,7 @@
 import RPi.GPIO as GPIO
 import time
 import math
+import datetime
 
 #GPIO_PIN_NO
 GPIO_ENC_LA = 26
@@ -40,6 +41,14 @@ shisei_old = 0
 zahyou_x_old = 0
 zahyou_y_old = 0
 sokudo_old = 0
+
+#odometori file set
+fmt_filename = "file1123.txt"
+#fmt_filename = "odometori_" + str(datetime.now().strftime("%Y%m%d-%H%M%S") + ".txt"
+print fmt_filename
+odometori_file_w = open(fmt_filename, "w")
+odometori_file_a = open(fmt_filename, "a")
+odometori_file_w.close()
 
 # encoder count bimyo
 def enc_count_L(pin) :
@@ -116,6 +125,9 @@ def keisan() :
         print "座標y : " + str(zahyou_y)
         print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
         print "-----"
+        file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
+        odometori_file_a.write(file_add)
+        #odometori_file_a.close()
         count_L = 0
         count_R = 0
         time_old = time_now
@@ -145,4 +157,5 @@ try:
         time.sleep(1)
 except KeyboardInterrupt:
     GPIO.cleanup()
+    odometori_file_a.close()
 

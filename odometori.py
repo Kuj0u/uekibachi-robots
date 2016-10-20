@@ -43,8 +43,9 @@ zahyou_y_old = 0
 sokudo_old = 0
 
 #odometori file set
-fmt_filename = "file1123.txt"
-#fmt_filename = "odometori_" + str(datetime.now().strftime("%Y%m%d-%H%M%S") + ".txt"
+#fmt_filename = "file1123.txt"
+date_now = datetime.datetime.today()
+fmt_filename = "log_odometori_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
 print fmt_filename
 odometori_file_w = open(fmt_filename, "w")
 odometori_file_a = open(fmt_filename, "a")

@@ -31,10 +31,10 @@ gyaku = -1
 #keisann_you
 Enc_P = 800.0
 Gear = 2.0
-Wheel_W = 66.0 / 1000.0 # メートル表記
-Tread = 290.0 / 1000.0 # メートル表記
+Wheel_W = 61.5 / 1000.0 # メートル表記
+Tread = 288.0 / 1000.0 # メートル表記
 time_old = time.time()
-time_interval = 0.5
+time_interval = 0.1
 time_interval_dt = 0
 kakusokudo_old = 0
 shisei_old = 0

@@ -41,9 +41,14 @@ shisei_old = 0
 zahyou_x_old = 0
 zahyou_y_old = 0
 sokudo_old = 0
+sokudo_L = 0
+sokudo_R = 0
+
+#speed control
+Target_V_l = 2.0
+Target_V_R = 3.0
 
 #odometori file set
-#fmt_filename = "file1123.txt"
 date_now = datetime.datetime.today()
 fmt_filename = "log_odometori_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
 print fmt_filename
@@ -60,7 +65,7 @@ def enc_count_L(pin) :
     else :
         new_LB = volt
     if(flag_pin_L == pin) :
-        print "逆回転だぜ！"
+        #print "逆回転だぜ！"
         count_L_add *= -1
     elif(old_LA == old_LB) :
         if(old_LA != new_LA) :
@@ -87,7 +92,7 @@ def enc_count_R(pin) :
     else :
         new_RB = volt
     if(flag_pin_R == pin) :
-        print "逆回転だぜ！"
+        #print "逆回転だぜ！"
         count_R_add *= -1
     elif(old_RA == old_RB) :
         if(old_RA != new_RA) :
@@ -107,7 +112,7 @@ def enc_count_R(pin) :
 
 
 def keisan() :
-    global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old
+    global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_L, sokudo_R
     time_now = time.time()
     if(time_now - time_old > time_interval) :
         time_interval_dt = time_now - time_old
@@ -115,16 +120,18 @@ def keisan() :
         kakudo_R = (2.0 * math.pi * count_R) / Enc_P
         kakusokudo_L = kakudo_L / Gear / time_interval_dt
         kakusokudo_R = kakudo_R / Gear / time_interval_dt
-        sokudo = (kakusokudo_L + kakusokudo_R) * Wheel_W / 2.0
+        sokudo_L = kakusokudo_L * Wheel_W / Tread
+        sokudo_R = kakusokudo_R * Wheel_W / Tread
+        sokudo = (sokudo_R + sokudo_L) / 2.0
         kakusokudo = (kakusokudo_R - kakusokudo_L) * Wheel_W / Tread
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
         zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
         #kokokara print
         print "速度  : " + str(sokudo)
-        print "座標x : " + str(zahyou_x)
-        print "座標y : " + str(zahyou_y)
-        print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
+        #print "座標x : " + str(zahyou_x)
+        #print "座標y : " + str(zahyou_y)
+        #print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
         print "-----"
         file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
         odometori_file_a.write(file_add)
@@ -137,6 +144,12 @@ def keisan() :
         shisei_old = shisei
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
+
+def speed_control() :
+    #目標速度差分
+    dvl = Target_V_L - sokudo_L
+    dvR = Target_V_R - sokudo_R
+    
 
 
 

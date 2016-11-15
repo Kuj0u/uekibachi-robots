@@ -63,7 +63,8 @@ while True:
     else :
         print "o-no-"
         exit()
-    wheel_L = wheel_L * 50 
+    #power save
+    wheel_L = wheel_L * 50
     wheel_R = wheel_R * 50
     print "L=%f" % (wheel_L)
     print "R=%f" % (wheel_R)

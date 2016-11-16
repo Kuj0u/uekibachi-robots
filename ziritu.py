@@ -41,38 +41,100 @@ shisei_old = 0
 zahyou_x_old = 0
 zahyou_y_old = 0
 sokudo_old = 0
-sokudo_L = 0
-sokudo_R = 0
+sokudo_Wheel_L = 0
+sokudo_Wheel_R = 0
 
 #odometori file set
 date_now = datetime.datetime.today()
-fmt_filename = "log_odometori_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+fmt_filename_ = "log_ziritu_light_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
 print fmt_filename
 odometori_file_w = open(fmt_filename, "w")
 odometori_file_a = open(fmt_filename, "a")
 odometori_file_w.close()
 
+#logの読み込み的な？まだ変えてないけど藁。
+date_now = datetime.datetime.today()
+filename_read = "log_ziritu_kanashii.txt"
+log_read_file_r = open(filename_read, "r")
+log_read_file_r.close()
+
 #自律移動用の変数群
 status_step_now = 0
+run_speed = 2.0   #走行時の移動速度（時速）
+Target_x = 0
+Target_y = 0
 
+#PWM用
+Moter_L1_Pin = 23
+Moter_L2_Pin = 24
+Moter_R2_Pin = 25
+Moter_Rb_Pin = 11
+PWM_frea = 250.0
+PWM_power = 100
+speed_MAX = 10.0
 
 ##########################33
 
+#log読み取り
+def log_read()
+    #log一行読み取り
+    #i++的な感じで
+    #splitでlist分けする
+#PWM信号変換
+def run_PWM(speed_L, speed_R) :
+    if speed_L >= 0 :
+        Duty_L1 = 0
+        Duty_L2 = speed_L
+    elif speed_L < 0 :
+        Duty_L1 = abs(speed_L)
+        Duty_L2 = 0
+    if speed_R >= 0 :
+        Duty_R1 = 0
+        Duty_R2 = speed_R
+    elif speed_R < 0 :
+        Duty_R1 = abs(speed_R)
+        Duty_R2 = 0
+    Moter_L1_PWM.ChangeDutyCycle(Duty_L1)
+    Moter_L2_PWM.ChangeDutyCycle(Duty_L2)
+    Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
+    Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
+
+
 #走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=cw, -1=ccw, 0=straight)
-def run(speed, way) :
-    #基本はPWM_TANKをべーすに
-    #pwm = speed/maxpeed
-    #目標と現在の差分、足りない分をstep数の割合に応じて加減
-    #runはそれの繰り返し
+def run_cal(speed, way) :
+    #回転方向からホイールの速度を定める
+    if way is 0 : 
+        Target_speed_L = speed
+        Target_speed_R = speed
+    elif way is 1 :
+        Target_speed_L = speed
+        Target_speed_R = speed * -1
+    elif way is 2 : 
+        Target_speed_L = speed * -1
+        Target_speed_R = speed
+    #目標速度までの差分計算
+    diff_speed_L_1st = Target_speed_L - sokudo_Wheel_L
+    diff_speed_R_1st = Target_speed_R - sokudo_Wheel_L
+    diff_speed_L_2nd = diff_speed_L_1st / 50.0
+    diff_speed_R_2nd = diff_speed_R_1st / 50.0
+    #速度の決定
+    if sokudo_Wheel_L is Target_speed_L:
+        speed_L = Target_speed_L
+    else :
+        speed_L = sokudo_Wheel_L + diff_speed_L_2nd
+    if sokudo_Wheel_R is Target_speed_R :
+        speed_R = Target_speed_R
+    else :
+        speed_R = sokudo_Wheel_R + diff_speed_R_2nd
+    #run()に渡す
+    run_PWM(speed_L, speed_R)
 
 #回転、引数はrad
-def rotation(kakudo) :
-    aaaa
+def rotation_cal(kakudo) :
     #現在の姿勢から回転方向判定
-    run() #引数は速度と回転方向
+    run_cal() #引数は速度と回転方向
     #if 適正角度になったら止める。
-    run(0,0) #こんな感じに止める
-
+    run_cal(0,0) #こんな感じに止める
 
 
 # encoder count bimyo
@@ -139,8 +201,8 @@ def keisan() :
         kakudo_R = (2.0 * math.pi * count_R) / Enc_P
         kakusokudo_L = kakudo_L / Gear / time_interval_dt
         kakusokudo_R = kakudo_R / Gear / time_interval_dt
-        sokudo_L = kakusokudo_L * Wheel_W / Tread
-        sokudo_R = kakusokudo_R * Wheel_W / Tread
+        sokudo_Wheel_L = kakusokudo_L * Wheel_W / Tread
+        sokudo_Wheel_R = kakusokudo_R * Wheel_W / Tread
         sokudo = (sokudo_R + sokudo_L) / 2.0
         kakusokudo = (kakusokudo_R - kakusokudo_L) * Wheel_W / Tread
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
@@ -183,27 +245,42 @@ def keisan() :
                 #status = 3
         if(status_step_now == 3) :
             #走行ステップ
-            #run()に方向と速度を送る。
+            #run()にと速度を送る。
             #if 目標位置 == 現在位置
                 #status = 0
                 #目標設定に戻る
 
 
+
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
-#encoder
+
+#setup encoder
 GPIO.setup(GPIO_ENC_LA, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(GPIO_ENC_LB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(GPIO_ENC_RA, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(GPIO_ENC_RB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#moter PWM
 
+#setup moter PWM
+GPIO.setup(Moter_L1_Pin, GPIO.OUT)
+GPIO.setup(Moter_L2_Pin, GPIO.OUT)
+GPIO.setup(Moter_R1_Pin, GPIO.OUT)
+GPIO.setup(Moter_R2_Pin, GPIO.OUT)
+Moter_L1_PWM = GPIO.PWM(Moter_L1_Pin, PWM_freq)
+Moter_L2_PWM = GPIO.PWM(Moter_L2_Pin, PWM_freq)
+Moter_R1_PWM = GPIO.PWM(Moter_R1_Pin, PWM_freq)
+Moter_R2_PWM = GPIO.PWM(Moter_R2_Pin, PWM_freq)
+Moter_L1_PWM.start(0)
+Moter_L2_PWM.start(0)
+Moter_R1_PWM.start(0)
+Moter_R2_PWM.start(0)
 
 # event setup
 GPIO.add_event_detect(GPIO_ENC_LA, GPIO.BOTH, enc_count_L)
 GPIO.add_event_detect(GPIO_ENC_LB, GPIO.BOTH, enc_count_L)
 GPIO.add_event_detect(GPIO_ENC_RA, GPIO.BOTH, enc_count_R)
 GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
+
 # event wait
 try:
     while True:

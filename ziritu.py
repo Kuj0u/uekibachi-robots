@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+###これ変えてね####
+#''のfilenameを適切に変更してください。
+#フォーマットは  x座標 (tab) y座標 (tab) 姿勢 (改行)
+log_file_name = ''
+
+
+#######
+
 import RPi.GPIO as GPIO
 import time
 import math
@@ -45,18 +53,20 @@ sokudo_Wheel_L = 0
 sokudo_Wheel_R = 0
 
 #odometori file set
-date_now = datetime.datetime.today()
-fmt_filename_ = "log_ziritu_light_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
-print fmt_filename
-odometori_file_w = open(fmt_filename, "w")
-odometori_file_a = open(fmt_filename, "a")
-odometori_file_w.close()
+#date_now = datetime.datetime.today()
+#fmt_filename_ = "log_ziritu_light_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+#print fmt_filename
+#odometori_file_w = open(fmt_filename, "w")
+#odometori_file_a = open(fmt_filename, "a")
+#odometori_file_w.close()
 
-#logの読み込み的な？まだ変えてないけど藁。
-date_now = datetime.datetime.today()
-filename_read = "log_ziritu_kanashii.txt"
-log_read_file_r = open(filename_read, "r")
-log_read_file_r.close()
+#logの読み込み
+#現在は一度に全部読み込み
+fileopen = open(log_file_name,'r')
+log_list = fileopen.readlines()
+log_list_step = len(fileopen.readlines())
+log_list = log_list
+log_list_step_now = 0
 
 #自律移動用の変数群
 status_step_now = 0
@@ -89,10 +99,11 @@ def shisei_cal() :
     rotation_run(sabun_kakudo)
 
 #log読み取り
-def log_read()
-    #log一行読み取り
-    #i++的な感じで
-    #splitでlist分けする
+def log_read(read_step) :
+    global Target_x, Target_y, log_list_step_now
+    log_now = log_list[read_step].split('\t')
+    Target_x = log_now[0]
+    Target_y = log_now[1]
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -142,7 +153,6 @@ def run_cal(speed, way) :
         speed_R = Target_speed_R
     else :
         speed_R = sokudo_Wheel_R + diff_speed_R_2nd
-    #run()に渡す
     run_PWM(speed_L, speed_R)
 
 #回転、引数はrad
@@ -155,7 +165,9 @@ def rotation_run(Target_kakudo) :
         run_cal(1,-1)
     #+-5degになったらとめる
     else :
+        global status_step_now
         run_cal(0,0)
+        status_step_now = 2
 
 
 # encoder count bimyo
@@ -250,20 +262,30 @@ def keisan() :
         #現在位置と目標位置が一致しているか
             #次の位置と角度を用意
         #statusの比較
+        global status_step_now
         if(stasus_step_now == 0) :
-            #次の目標設定
-            #status = 1
-            #終わりなら終了。
-            #status = 99 or exit()
+            #目標の読み込み
+            #最終行でなければ読み込み
+            if log_list_step_now != log_list_step :
+                log_read(log_list_step_now)
+                status_step_now = 1
+            else
+                print "おわり\n"
+                GPIO.cleanup()
+                fileopen.close()
+                exit()
         if(status_step_now == 1) :
-            #計算ステップ
-            #目標までの距離と姿勢を計算
-            #status = 2
+            #姿勢を整える
+            #shisei_calの中で回転までやってます。
+            shisei_cal()
+            #shisei_call(厳密にはrotation_run)のなかでstatus =　次ってやってます。
         if(status_step_now == 2) :
-            #回転ステップ
-            #回転方向だけをrotation()に送る
-            #if 目標姿勢 == 現在姿勢
-                #status = 3
+            #走行します。
+            if run_der() != 1 :
+                run_cal(1,0)
+            else :
+                run_cal(0,0)
+                status_step_now = 0
         if(status_step_now == 3) :
             #走行ステップ
             #run()にと速度を送る。
@@ -308,5 +330,5 @@ try:
         time.sleep(1)
 except KeyboardInterrupt:
     GPIO.cleanup()
-    odometori_file_a.close()
+    fileopen.close()
 

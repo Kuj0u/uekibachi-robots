@@ -12,6 +12,7 @@ import RPi.GPIO as GPIO
 import time
 import math
 import datetime
+import serial
 
 #GPIO_PIN_NO
 GPIO_ENC_LA = 26
@@ -36,7 +37,7 @@ count_L_add = 0
 count_R_add = 0
 gyaku = -1
 
-#keisann_you
+#keisan
 Enc_P = 800.0
 Gear = 2.0
 Wheel_W = 61.5 / 1000.0 # メートル表記
@@ -74,6 +75,7 @@ run_speed = 2.0   #走行時の移動速度（時速）
 Target_x = 0
 Target_y = 0
 Target_der = 0.1
+brightness_stop = 800
 
 #PWM用
 Moter_L1_Pin = 23
@@ -180,6 +182,12 @@ def rotation_run(Target_kakudo) :
         run_cal(0,0)
         status_step_now = 2
 
+def close_end() :
+    print "おわり\n"
+    GPIO.cleanup()
+    fileopen.close()
+    exit()
+
 
 # encoder count bimyo
 def enc_count_L(pin) :
@@ -275,17 +283,21 @@ def keisan() :
         #statusの比較
         global status_step_now
         if(stasus_step_now == 0) :
-            #目標の読み込み
-            #最終行でなければ読み込み
+            #いろいろ読み込み
+            #シリアル受け取り
+            ser = serial.Serial('/dev/ttyACM0', 9600)
+            brightness_now = int(ser.readline())
+            #しきい値よりも明るければ止める
+            if brightness_now > brightness_stop :
+                print "あかる！！\n"
+                close_end()
+            #リストが続くなら次を読み込む
             if log_list_step_now != log_list_step :
                 log_read(log_list_step_now)
                 status_step_now = 1
-            #おわり
-            else
-                print "おわり\n"
-                GPIO.cleanup()
-                fileopen.close()
-                exit()
+            #それ以外は終了
+            else :
+                close_end()
         if(status_step_now == 1) :
             #姿勢を整える
             #shisei_calの中で回転までやってます。

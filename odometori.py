@@ -145,13 +145,6 @@ def keisan() :
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
 
-def speed_control() :
-    #目標速度差分
-    dvl = Target_V_L - sokudo_L
-    dvR = Target_V_R - sokudo_R
-    
-
-
 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)

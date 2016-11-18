@@ -75,13 +75,29 @@ speed_MAX = 10.0
 
 ##########################33
 
+def shisei_cal() :
+    #とりあえず、位置と姿勢
+    shisei_now = shisei_old
+    x_now = zahyou_x_old
+    y_now = zahyou_y_old
+    #仮想の1m先を計算
+    x_vir = math.cos(x_now)
+    y_vir = math.sin(y_now)
+    #自分の位置と目標の角度計算
+    tau = ( (x_vir - x_now) * (Target_y - x_now) - (y_vir - y_now) * (Target_x - x_now) ) / ( math.sqrt((x_vir - x_now) * (x_vir - x_now) + (y_vir - y_now) * (y_vir - y_now)) * math.sqrt((Target_x - x_now) * (Target_x - x_now) + (Target_y - y_now) * (Target_y - y_now)))
+    sabun_kakudo = math.asin(tau)
+    rotation_run(sabun_kakudo)
+
 #log読み取り
 def log_read()
     #log一行読み取り
     #i++的な感じで
     #splitでlist分けする
+
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
+    speed_L = speed_L / speed_MAX * PWM_power
+    speed_R = speed_R / speed_MAX * PWM_power
     if speed_L >= 0 :
         Duty_L1 = 0
         Duty_L2 = speed_L
@@ -130,11 +146,16 @@ def run_cal(speed, way) :
     run_PWM(speed_L, speed_R)
 
 #回転、引数はrad
-def rotation_cal(kakudo) :
-    #現在の姿勢から回転方向判定
-    run_cal() #引数は速度と回転方向
-    #if 適正角度になったら止める。
-    run_cal(0,0) #こんな感じに止める
+def rotation_run(Target_kakudo) :
+    #+-5degでないときは回す
+    kakudo_now = (shisei_old % 360) / 180 * math.pi
+    if kakudo_now > Target_kakudo + 5 :
+        run_cal(1,1)
+    elif kakudo_now < Target_kakudo -5 :
+        run_cal(1,-1)
+    #+-5degになったらとめる
+    else :
+        run_cal(0,0)
 
 
 # encoder count bimyo

@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 
+####logのファイルネーム###
+
+#これはファイルに日時を加えるタイプ
+#fmt_filename = "log_odometori_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+
+#これはそのままタイプ
+fmt_filename = "log_odometori.txt"
+
+########################
 import RPi.GPIO as GPIO
 import time
 import math
@@ -50,7 +59,7 @@ Target_V_R = 3.0
 
 #odometori file set
 date_now = datetime.datetime.today()
-fmt_filename = "log_odometori_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+#fmt_filename = "log_odometori_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
 print fmt_filename
 odometori_file_w = open(fmt_filename, "w")
 odometori_file_a = open(fmt_filename, "a")
@@ -136,7 +145,6 @@ def keisan() :
         #file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
         file_add = str(sokudo) + str(sokudo_L) + str(sokudo_R) + "\n"
         odometori_file_a.write(file_add)
-        #odometori_file_a.close()
         count_L = 0
         count_R = 0
         time_old = time_now
@@ -145,13 +153,6 @@ def keisan() :
         shisei_old = shisei
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
-
-def speed_control() :
-    #目標速度差分
-    dvl = Target_V_L - sokudo_L
-    dvR = Target_V_R - sokudo_R
-    
-
 
 
 # GPIO setup

@@ -3,7 +3,7 @@
 ###これ変えてね####
 #''のfilenameを適切に変更してください。
 #フォーマットは  x座標 (tab) y座標 (tab) 姿勢 (改行)
-log_file_name = ''
+log_file_name = 'log_odometori.txt'
 
 
 #######
@@ -73,6 +73,7 @@ status_step_now = 0
 run_speed = 2.0   #走行時の移動速度（時速）
 Target_x = 0
 Target_y = 0
+Target_der = 0.1
 
 #PWM用
 Moter_L1_Pin = 23
@@ -85,6 +86,15 @@ speed_MAX = 10.0
 
 ##########################33
 
+#座標のズレを評価
+def zahyou_def() :
+    if Target_x > zahyou_x_old - Target_def && Target_x < zahyou_x_old + Target_def :
+        if Target_y > zahyou_y_old - Target_def && Target_y < zahyou_y_old + Target_def :
+            return 1
+    return 0
+
+
+#姿勢の計算
 def shisei_cal() :
     #とりあえず、位置と姿勢
     shisei_now = shisei_old
@@ -104,6 +114,7 @@ def log_read(read_step) :
     log_now = log_list[read_step].split('\t')
     Target_x = log_now[0]
     Target_y = log_now[1]
+    log_list_step_now += 1
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -160,9 +171,9 @@ def rotation_run(Target_kakudo) :
     #+-5degでないときは回す
     kakudo_now = (shisei_old % 360) / 180 * math.pi
     if kakudo_now > Target_kakudo + 5 :
-        run_cal(1,1)
+        run_cal(run_speed,1)
     elif kakudo_now < Target_kakudo -5 :
-        run_cal(1,-1)
+        run_cal(run_speed,-1)
     #+-5degになったらとめる
     else :
         global status_step_now
@@ -269,6 +280,7 @@ def keisan() :
             if log_list_step_now != log_list_step :
                 log_read(log_list_step_now)
                 status_step_now = 1
+            #おわり
             else
                 print "おわり\n"
                 GPIO.cleanup()
@@ -278,21 +290,16 @@ def keisan() :
             #姿勢を整える
             #shisei_calの中で回転までやってます。
             shisei_cal()
-            #shisei_call(厳密にはrotation_run)のなかでstatus =　次ってやってます。
+            #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
         if(status_step_now == 2) :
             #走行します。
-            if run_der() != 1 :
-                run_cal(1,0)
+            #目標地点でなければ走り続ける
+            if zahyou_def() != 1 :
+                run_cal(run_speed,0)
+            #目標地点なら止まってまた初めからやる
             else :
                 run_cal(0,0)
                 status_step_now = 0
-        if(status_step_now == 3) :
-            #走行ステップ
-            #run()にと速度を送る。
-            #if 目標位置 == 現在位置
-                #status = 0
-                #目標設定に戻る
-
 
 
 # GPIO setup

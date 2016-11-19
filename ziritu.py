@@ -3,6 +3,7 @@
 ###これ変えてね####
 #''のfilenameを適切に変更してください。
 #フォーマットは  x座標 (tab) y座標 (tab) 姿勢 (改行)
+#正直、姿勢いらないけどね。まとめて取り込んでる。
 log_file_name = 'log_odometori.txt'
 
 
@@ -66,6 +67,7 @@ sokudo_Wheel_R = 0
 fileopen = open(log_file_name,'r')
 log_list = fileopen.readlines()
 log_list_step = len(fileopen.readlines())
+fileopen.close()
 log_list = log_list
 log_list_step_now = 0
 
@@ -74,7 +76,7 @@ status_step_now = 0
 run_speed = 2.0   #走行時の移動速度（時速）
 Target_x = 0
 Target_y = 0
-Target_der = 0.1
+Target_der = 0.1    #目標との容認誤差。
 brightness_stop = 800
 
 #PWM用
@@ -88,7 +90,7 @@ speed_MAX = 10.0
 
 ##########################33
 
-#座標のズレを評価
+#座標のズレを評価. 0=まだ離れてる 1=かなり近いね
 def zahyou_def() :
     if Target_x > zahyou_x_old - Target_def and Target_x < zahyou_x_old + Target_def :
         if Target_y > zahyou_y_old - Target_def and Target_y < zahyou_y_old + Target_def :
@@ -185,7 +187,7 @@ def rotation_run(Target_kakudo) :
 def close_end() :
     print "おわり\n"
     GPIO.cleanup()
-    fileopen.close()
+    #fileopen.close()   #既に閉じてるから大丈夫
     exit()
 
 
@@ -277,43 +279,7 @@ def keisan() :
         shisei_old = shisei
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
-        #現在の状態 status_nowで作業内容に移る
-        #現在位置と目標位置が一致しているか
-            #次の位置と角度を用意
-        #statusの比較
-        global status_step_now
-        if(stasus_step_now == 0) :
-            print "step 0 "
-            #いろいろ読み込み
-            #シリアル受け取り
-            ser = serial.Serial('/dev/ttyACM0', 9600)
-            brightness_now = int(ser.readline())
-            #しきい値よりも明るければ止める
-            if brightness_now > brightness_stop :
-                print "あかる！！\n"
-                close_end()
-            #リストが続くなら次を読み込む
-            if log_list_step_now != log_list_step :
-                log_read(log_list_step_now)
-                status_step_now = 1
-            #それ以外は終了
-            else :
-                close_end()
-        if(status_step_now == 1) :
-            #姿勢を整える
-            #shisei_calの中で回転までやってます。
-            shisei_cal()
-            #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
-        if(status_step_now == 2) :
-            #走行します。
-            #目標地点でなければ走り続ける
-            if zahyou_def() != 1 :
-                run_cal(run_speed,0)
-            #目標地点なら止まってまた初めからやる
-            else :
-                run_cal(0,0)
-                status_step_now = 0
-
+ 
 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
@@ -346,8 +312,41 @@ GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 
 # event wait
 try:
+    global status_step_now
     while True:
+        if(stasus_step_now == 0) :
+            print "step 0 "
+            #いろいろ読み込み
+            #USBシリアル受け取り.繋いだらコメントアウト解除
+            #ser = serial.Serial('/dev/ttyACM0', 9600)
+            #brightness_now = int(ser.readline())
+            #しきい値よりも明るければ止める
+            #if brightness_now > brightness_stop :
+            #    print "あかる！！\n"
+            #    close_end()
+            #リストが終わりでなければ次を読み込む
+            if log_list_step_now != log_list_step :
+                log_read(log_list_step_now)
+                status_step_now = 1
+            #それ以外は終了
+            else :
+                close_end()
+        if(status_step_now == 1) :
+            #姿勢を整える
+            #shisei_calの中で回転までやってます。
+            shisei_cal()
+            #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
+        if(status_step_now == 2) :
+            #走行します。
+            #目標地点でなければ走り続ける
+            if zahyou_def() != 1 :
+                run_cal(run_speed,0)
+            #目標地点なら止まってまた初めからやる
+            else :
+                run_cal(0,0)
+                status_step_now = 0
         time.sleep(1)
+
 except KeyboardInterrupt:
     GPIO.cleanup()
     fileopen.close()

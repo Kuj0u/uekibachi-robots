@@ -314,7 +314,7 @@ GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 try:
     global status_step_now
     while True:
-        if(stasus_step_now == 0) :
+        if stasus_step_now == 0 :
             print "step 0 "
             #いろいろ読み込み
             #USBシリアル受け取り.繋いだらコメントアウト解除
@@ -331,12 +331,12 @@ try:
             #それ以外は終了
             else :
                 close_end()
-        if(status_step_now == 1) :
+        if status_step_now == 1 :
             #姿勢を整える
             #shisei_calの中で回転までやってます。
             shisei_cal()
             #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
-        if(status_step_now == 2) :
+        if status_step_now == 2 :
             #走行します。
             #目標地点でなければ走り続ける
             if zahyou_def() != 1 :

@@ -80,9 +80,9 @@ brightness_stop = 800
 #PWM用
 Moter_L1_Pin = 23
 Moter_L2_Pin = 24
-Moter_R2_Pin = 25
-Moter_Rb_Pin = 11
-PWM_frea = 250.0
+Moter_R1_Pin = 25
+Moter_R2_Pin = 11
+PWM_freq = 250.0
 PWM_power = 100
 speed_MAX = 10.0
 
@@ -90,8 +90,8 @@ speed_MAX = 10.0
 
 #座標のズレを評価
 def zahyou_def() :
-    if Target_x > zahyou_x_old - Target_def && Target_x < zahyou_x_old + Target_def :
-        if Target_y > zahyou_y_old - Target_def && Target_y < zahyou_y_old + Target_def :
+    if Target_x > zahyou_x_old - Target_def and Target_x < zahyou_x_old + Target_def :
+        if Target_y > zahyou_y_old - Target_def and Target_y < zahyou_y_old + Target_def :
             return 1
     return 0
 
@@ -283,6 +283,7 @@ def keisan() :
         #statusの比較
         global status_step_now
         if(stasus_step_now == 0) :
+            print "step 0 "
             #いろいろ読み込み
             #シリアル受け取り
             ser = serial.Serial('/dev/ttyACM0', 9600)

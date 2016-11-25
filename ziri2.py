@@ -106,8 +106,8 @@ def shisei_cal() :
     x_now = zahyou_x_old
     y_now = zahyou_y_old
     #仮想の1m先を計算
-    x_vir = math.cos(x_now)
-    y_vir = math.sin(y_now)
+    x_vir = math.cos(shisei_now) + x_now
+    y_vir = math.sin(shisei_now) + y_now
     #自分の位置と目標の角度計算
     tau = ( (x_vir - x_now) * (Target_y - x_now) - (y_vir - y_now) * (Target_x - x_now) ) / ( math.sqrt((x_vir - x_now) * (x_vir - x_now) + (y_vir - y_now) * (y_vir - y_now)) * math.sqrt((Target_x - x_now) * (Target_x - x_now) + (Target_y - y_now) * (Target_y - y_now)))
     sabun_kakudo = math.asin(tau)
@@ -128,17 +128,17 @@ def run_PWM(speed_L, speed_R) :
     speed_L = speed_L / speed_MAX * PWM_power
     speed_R = speed_R / speed_MAX * PWM_power
     if speed_L >= 0 :
-        Duty_L1 = 0
-        Duty_L2 = speed_L
-    elif speed_L < 0 :
-        Duty_L1 = abs(speed_L)
+        Duty_L1 = speed_L
         Duty_L2 = 0
+    elif speed_L < 0 :
+        Duty_L1 = 0
+        Duty_L2 = abs(speed_L)
     if speed_R >= 0 :
-        Duty_R1 = 0
-        Duty_R2 = speed_R
-    elif speed_R < 0 :
-        Duty_R1 = abs(speed_R)
+        Duty_R1 = speed_R
         Duty_R2 = 0
+    elif speed_R < 0 :
+        Duty_R1 = 0
+        Duty_R2 = abs(speed_R)
     Moter_L1_PWM.ChangeDutyCycle(Duty_L1)
     Moter_L2_PWM.ChangeDutyCycle(Duty_L2)
     Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
@@ -267,8 +267,10 @@ def keisan() :
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
         #kokokara print
         print "速度  : " + str(sokudo)
-        #print "座標x : " + str(zahyou_x)
-        #print "座標y : " + str(zahyou_y)
+        print "座標x : " + str(zahyou_x)
+        print "座標y : " + str(zahyou_y)
+        print "差分x : " + str(zahyou_x - Target_x)
+        print "差分y : " + str(zahyou_y - Target_y)
         #print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
         print "-----"
         #file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"

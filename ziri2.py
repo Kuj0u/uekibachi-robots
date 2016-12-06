@@ -79,6 +79,7 @@ Target_x = 0
 Target_y = 0
 Target_def = 0.1    #目標との容認誤差。
 brightness_stop = 800
+kakudo = 0
 
 #PWM用
 Moter_L1_Pin = 23
@@ -87,7 +88,7 @@ Moter_R1_Pin = 25
 Moter_R2_Pin = 11
 PWM_freq = 250.0
 PWM_power = 100
-speed_MAX = 10.0
+speed_MAX = 10.8
 
 ##########################33
 
@@ -102,16 +103,33 @@ def zahyou_def() :
 #姿勢の計算
 def shisei_cal() :
     #とりあえず、位置と姿勢
+    global kakudo
     shisei_now = shisei_old
     x_now = zahyou_x_old
     y_now = zahyou_y_old
     #仮想の1m先を計算
     x_vir = math.cos(shisei_now) + x_now
     y_vir = math.sin(shisei_now) + y_now
+    print "x_vir : " + str(x_vir)
+    print "y_vir : " + str(y_vir)
     #自分の位置と目標の角度計算
-    tau = ( (x_vir - x_now) * (Target_y - x_now) - (y_vir - y_now) * (Target_x - x_now) ) / ( math.sqrt((x_vir - x_now) * (x_vir - x_now) + (y_vir - y_now) * (y_vir - y_now)) * math.sqrt((Target_x - x_now) * (Target_x - x_now) + (Target_y - y_now) * (Target_y - y_now)))
-    sabun_kakudo = math.asin(tau)
-    rotation_run(sabun_kakudo)
+    #bunshi = ( (x_vir - x_now) * (Target_y - x_now) - (y_vir - y_now) * (Target_x - x_now) ) 
+    bunshi = x_vir * y_vir + Target_x * Target_y
+    #bunbo = ( math.sqrt((x_vir - x_now) * (x_vir - x_now) + (y_vir - y_now) * (y_vir - y_now)) * math.sqrt((Target_x - x_now) * (Target_x - x_now) + (Target_y - y_now) * (Target_y - y_now)))
+    bunbo = math.sqrt((x_vir * y_vir) * (x_vir * y_vir)) * math.sqrt((Target_x * Target_y) * (Target_x * Target_y))
+    print "分子 : " + str(bunshi)
+    print "分母 : " + str(bunbo)
+    if bunbo == 0 :
+        bunbo = bunshi
+    tau = bunshi / bunbo
+    print "tau : " + str(tau)
+    if tau >= 1 :
+        tau = 1
+    elif tau < -1 :
+        tau = -1
+    #kakudo = math.acos(tau)
+    kakudo = math.asin(tau)
+    rotation_run(kakudo)
 
 #log読み取り
 def log_read(read_step) :
@@ -127,6 +145,14 @@ def log_read(read_step) :
 def run_PWM(speed_L, speed_R) :
     speed_L = speed_L / speed_MAX * PWM_power
     speed_R = speed_R / speed_MAX * PWM_power
+    if speed_L > 100 :
+        speed_L = 100
+    elif speed_L < -100 :
+        speed_L = -100
+    if speed_R > 100 :
+        speed_R = 100
+    elif speed_R < -100 :
+        speed_R = -100
     if speed_L >= 0 :
         Duty_L1 = speed_L
         Duty_L2 = 0
@@ -144,10 +170,13 @@ def run_PWM(speed_L, speed_R) :
     Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
     Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
 
+a_L = 0
+a_R = 0
 
 #走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=cw, -1=ccw, 0=straight)
 def run_cal(speed, way) :
     #回転方向からホイールの速度を定める
+    global a_L, a_R
     if way is 0 : 
         Target_speed_L = speed
         Target_speed_R = speed
@@ -160,17 +189,23 @@ def run_cal(speed, way) :
     #目標速度までの差分計算
     diff_speed_L_1st = Target_speed_L - sokudo_Wheel_L
     diff_speed_R_1st = Target_speed_R - sokudo_Wheel_R
-    diff_speed_L_2nd = diff_speed_L_1st / 50.0
-    diff_speed_R_2nd = diff_speed_R_1st / 50.0
+    diff_speed_L_2nd = diff_speed_L_1st / 5.0
+    diff_speed_R_2nd = diff_speed_R_1st / 5.0
+    print "速度の引き算 : " + str(diff_speed_L_2nd)
     #速度の決定
     if Target_speed_L == sokudo_Wheel_L :
         speed_L = Target_speed_L
     else :
-        speed_L = Target_speed_L + diff_speed_L_2nd
+        speed_L = a_L + diff_speed_L_2nd
     if  Target_speed_R == sokudo_Wheel_R :
         speed_R = Target_speed_R
     else :
-        speed_R = Target_speed_R + diff_speed_R_2nd
+        speed_R = a_R + diff_speed_R_2nd
+    a_L = speed_L
+    a_R = speed_R
+    print "原罪の速度 : " + str(sokudo_Wheel_L)
+    print "指示速度_L : " + str(speed_L)
+    print "指示速度_R : " + str(speed_R)
     run_PWM(speed_L, speed_R)
 
 #回転、引数はrad
@@ -265,14 +300,6 @@ def keisan() :
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
         zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
-        #kokokara print
-        print "速度  : " + str(sokudo)
-        print "座標x : " + str(zahyou_x)
-        print "座標y : " + str(zahyou_y)
-        print "差分x : " + str(zahyou_x - Target_x)
-        print "差分y : " + str(zahyou_y - Target_y)
-        #print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
-        print "-----"
         #file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
         #odometori_file_a.write(file_add)
         #odometori_file_a.close()

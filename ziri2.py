@@ -112,23 +112,19 @@ def shisei_cal() :
     y_vir = math.sin(shisei_now) + y_now
     print "x_vir : " + str(x_vir)
     print "y_vir : " + str(y_vir)
+    #targetにとりあえず1,000かける
+    mokuteki_x = Target_x * 1000
+    mokuteki_y = Target_y * 1000
     #自分の位置と目標の角度計算
-    #bunshi = ( (x_vir - x_now) * (Target_y - x_now) - (y_vir - y_now) * (Target_x - x_now) ) 
-    bunshi = x_vir * y_vir + Target_x * Target_y
-    #bunbo = ( math.sqrt((x_vir - x_now) * (x_vir - x_now) + (y_vir - y_now) * (y_vir - y_now)) * math.sqrt((Target_x - x_now) * (Target_x - x_now) + (Target_y - y_now) * (Target_y - y_now)))
-    bunbo = math.sqrt((x_vir * y_vir) * (x_vir * y_vir)) * math.sqrt((Target_x * Target_y) * (Target_x * Target_y))
+    bunshi = ( (x_vir - x_now) * (mokuteki_y - x_now) - (y_vir - y_now) * (mokuteki_x - x_now) ) 
+    #bunshi = x_vir * y_vir + Target_x * Target_y
+    bunbo = ( math.sqrt((x_vir - x_now) * (x_vir - x_now) + (y_vir - y_now) * (y_vir - y_now)) * math.sqrt((mokuteki_x - x_now) * (mokuteki_x - x_now) + (mokuteki_y - y_now) * (mokuteki_y - y_now)))
+    #bunbo = math.sqrt((x_vir * y_vir) * (x_vir * y_vir)) * math.sqrt((Target_x * Target_y) * (Target_x * Target_y))
     print "分子 : " + str(bunshi)
     print "分母 : " + str(bunbo)
-    if bunbo == 0 :
-        bunbo = bunshi
     tau = bunshi / bunbo
-    print "tau : " + str(tau)
-    if tau >= 1 :
-        tau = 1
-    elif tau < -1 :
-        tau = -1
-    #kakudo = math.acos(tau)
-    kakudo = math.asin(tau)
+    kakudo = math.acos(tau)
+    #kakudo = math.asin(tau)
     rotation_run(kakudo)
 
 #log読み取り
@@ -145,14 +141,6 @@ def log_read(read_step) :
 def run_PWM(speed_L, speed_R) :
     speed_L = speed_L / speed_MAX * PWM_power
     speed_R = speed_R / speed_MAX * PWM_power
-    if speed_L > 100 :
-        speed_L = 100
-    elif speed_L < -100 :
-        speed_L = -100
-    if speed_R > 100 :
-        speed_R = 100
-    elif speed_R < -100 :
-        speed_R = -100
     if speed_L >= 0 :
         Duty_L1 = speed_L
         Duty_L2 = 0
@@ -187,6 +175,8 @@ def run_cal(speed, way) :
         Target_speed_L = speed * -1
         Target_speed_R = speed
     #目標速度までの差分計算
+    print Target_speed_L
+    print sokudo_Wheel_L
     diff_speed_L_1st = Target_speed_L - sokudo_Wheel_L
     diff_speed_R_1st = Target_speed_R - sokudo_Wheel_R
     diff_speed_L_2nd = diff_speed_L_1st / 5.0
@@ -203,7 +193,7 @@ def run_cal(speed, way) :
         speed_R = a_R + diff_speed_R_2nd
     a_L = speed_L
     a_R = speed_R
-    print "原罪の速度 : " + str(sokudo_Wheel_L)
+    print "現在の速度 : " + str(sokudo_Wheel_L)
     print "指示速度_L : " + str(speed_L)
     print "指示速度_R : " + str(speed_R)
     run_PWM(speed_L, speed_R)
@@ -211,7 +201,7 @@ def run_cal(speed, way) :
 #回転、引数はrad
 def rotation_run(Target_kakudo) :
     #+-5degでないときは回す
-    kakudo_now = (shisei_old % 360) / 180 * math.pi
+    kakudo_now = (shisei_old / math.pi) * 180 % 360
     if kakudo_now > Target_kakudo + 5 :
         run_cal(run_speed,1)
     elif kakudo_now < Target_kakudo -5 :

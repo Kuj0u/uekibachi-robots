@@ -53,6 +53,11 @@ zahyou_y_old = 0
 sokudo_old = 0
 sokudo_Wheel_L = 0
 sokudo_Wheel_R = 0
+sokudo_t = 0
+sokudo_Wheel_L_t0 = 0
+sokudo_Wheel_L_t1 = 0
+sokudo_Wheel_R_t0 = 0
+sokudo_Wheel_R_t1 = 0
 
 #odometori file set
 #date_now = datetime.datetime.today()
@@ -90,6 +95,13 @@ PWM_freq = 250.0
 PWM_power = 100
 speed_MAX = 10.8
 
+#PID用的な（笑）泣きそう
+PID_Kp = 1.0
+PID_Ki = 2.0
+PID_Kd = 1.0
+PID_I_L = 0
+PID_I_R = 0
+PID_time_old = 0
 ##########################33
 
 #座標のズレを評価. 0=まだ離れてる 1=かなり近いね
@@ -110,25 +122,14 @@ def shisei_cal() :
     #仮想の1m先を計算
     x_vir = math.cos(shisei_now) + x_now
     y_vir = math.sin(shisei_now) + y_now
-    print "x_vir : " + str(x_vir)
-    print "y_vir : " + str(y_vir)
     #自分の位置と目標の角度計算
-    #bunshi = ( (x_vir - x_now) * (Target_y - x_now) - (y_vir - y_now) * (Target_x - x_now) ) 
-    bunshi = x_vir * y_vir + Target_x * Target_y
-    #bunbo = ( math.sqrt((x_vir - x_now) * (x_vir - x_now) + (y_vir - y_now) * (y_vir - y_now)) * math.sqrt((Target_x - x_now) * (Target_x - x_now) + (Target_y - y_now) * (Target_y - y_now)))
-    bunbo = math.sqrt((x_vir * y_vir) * (x_vir * y_vir)) * math.sqrt((Target_x * Target_y) * (Target_x * Target_y))
+    seikika = 1000  #(目標ベクトルが１未満なので適当に1000とかかけてる）
+    bunshi = ( (x_vir - x_now)*seikika * (Target_y - x_now)*seikika - (y_vir - y_now)*seikika * (Target_x - x_now)*seikika ) 
+    bunbo = ( math.sqrt((x_vir - x_now)*seikika * (x_vir - x_now)*seikika + (y_vir - y_now)*seikika * (y_vir - y_now)*seikika) * math.sqrt((Target_x - x_now)*seikika * (Target_x - x_now)*seikika + (Target_y - y_now)*seikika * (Target_y - y_now)*seikika))
     print "分子 : " + str(bunshi)
     print "分母 : " + str(bunbo)
-    if bunbo == 0 :
-        bunbo = bunshi
     tau = bunshi / bunbo
-    print "tau : " + str(tau)
-    if tau >= 1 :
-        tau = 1
-    elif tau < -1 :
-        tau = -1
-    #kakudo = math.acos(tau)
-    kakudo = math.asin(tau)
+    kakudo = math.acos(tau)
     rotation_run(kakudo)
 
 #log読み取り
@@ -145,14 +146,6 @@ def log_read(read_step) :
 def run_PWM(speed_L, speed_R) :
     speed_L = speed_L / speed_MAX * PWM_power
     speed_R = speed_R / speed_MAX * PWM_power
-    if speed_L > 100 :
-        speed_L = 100
-    elif speed_L < -100 :
-        speed_L = -100
-    if speed_R > 100 :
-        speed_R = 100
-    elif speed_R < -100 :
-        speed_R = -100
     if speed_L >= 0 :
         Duty_L1 = speed_L
         Duty_L2 = 0
@@ -170,13 +163,11 @@ def run_PWM(speed_L, speed_R) :
     Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
     Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
 
-a_L = 0
-a_R = 0
 
 #走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=cw, -1=ccw, 0=straight)
 def run_cal(speed, way) :
     #回転方向からホイールの速度を定める
-    global a_L, a_R
+    global PID_time_old, PID_I_L, PID_I_R
     if way is 0 : 
         Target_speed_L = speed
         Target_speed_R = speed
@@ -187,31 +178,50 @@ def run_cal(speed, way) :
         Target_speed_L = speed * -1
         Target_speed_R = speed
     #目標速度までの差分計算
-    diff_speed_L_1st = Target_speed_L - sokudo_Wheel_L
-    diff_speed_R_1st = Target_speed_R - sokudo_Wheel_R
-    diff_speed_L_2nd = diff_speed_L_1st / 5.0
-    diff_speed_R_2nd = diff_speed_R_1st / 5.0
-    print "速度の引き算 : " + str(diff_speed_L_2nd)
-    #速度の決定
-    if Target_speed_L == sokudo_Wheel_L :
-        speed_L = Target_speed_L
-    else :
-        speed_L = a_L + diff_speed_L_2nd
-    if  Target_speed_R == sokudo_Wheel_R :
-        speed_R = Target_speed_R
-    else :
-        speed_R = a_R + diff_speed_R_2nd
-    a_L = speed_L
-    a_R = speed_R
-    print "原罪の速度 : " + str(sokudo_Wheel_L)
-    print "指示速度_L : " + str(speed_L)
-    print "指示速度_R : " + str(speed_R)
+    #PID制御でやる。パラメータ適宜調整
+    PID_time_now = time.time()
+    PID_dt = PID_time_old - PID_time_now
+    PID_P_L = Target_speed_L - sokudo_Wheel_L_t0
+    PID_P_R = Target_speed_R - sokudo_Wheel_R_t0
+    PID_I_L = (Target_speed_L - sokudo_Wheel_L_t0) * PID_dt + PID_I_L
+    PID_I_R = (Target_speed_R - sokudo_Wheel_R_t0) * PID_dt + PID_I_R
+    PID_D_L = (Target_speed_L - sokudo_Wheel_L_t0) - (Target_speed_L - sokudo_Wheel_L_t1)
+    PID_D_R = (Target_speed_R - sokudo_Wheel_R_t0) - (Target_speed_R - sokudo_Wheel_R_t1)
+    #操作量
+    add_L = PID_Kp * PID_P_L + PID_Ki * PID_I_L + PID_Kd * PID_D_L
+    add_R = PID_Kp * PID_P_R + PID_Ki * PID_I_R + PID_Kd * PID_D_R
+    #目標速度に操作量を追加
+    speed_L = Target_speed_L + add_L
+    speed_R = Target_speed_R + add_R
+    ##目標速度までの差分計算 P制御
+    #diff_speed_L_1st = Target_speed_L - sokudo_Wheel_L
+    #diff_speed_R_1st = Target_speed_R - sokudo_Wheel_R
+    #diff_speed_L_2nd = diff_speed_L_1st / 5.0
+    #diff_speed_R_2nd = diff_speed_R_1st / 5.0
+    #print "速度の引き算 : " + str(diff_speed_L_2nd)
+    ##速度の決定
+    #if Target_speed_L == sokudo_Wheel_L :
+    #    speed_L = Target_speed_L
+    #else :
+    #    speed_L = add_L + diff_speed_L_2nd
+    #if  Target_speed_R == sokudo_Wheel_R :
+    #    speed_R = Target_speed_R
+    #else :
+    #    speed_R = add_R + diff_speed_R_2nd
+    #add_L = speed_L
+    #add_R = speed_R
+    #print "現在の速度_L : " + str(sokudo_Wheel_L)
+    #print "指示速度_L : " + str(speed_L)
+    #print "指示速度_R : " + str(speed_R)
+    PID_time_old = PID_time_now
     run_PWM(speed_L, speed_R)
 
 #回転、引数はrad
 def rotation_run(Target_kakudo) :
+    #rad => dig(360で見る)
+    kakudo_now = shisei_old / math.pi / 2   # (rad_odl * 180 / pi ) % 360
+    #あれ？これじゃダメじゃね？もしも３６０超えてマイナス見たい時見れなくな？だめじゃん。。。
     #+-5degでないときは回す
-    kakudo_now = (shisei_old % 360) / 180 * math.pi
     if kakudo_now > Target_kakudo + 5 :
         run_cal(run_speed,1)
     elif kakudo_now < Target_kakudo -5 :
@@ -285,7 +295,7 @@ def enc_count_R(pin) :
 
 
 def keisan() :
-    global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_Wheel_L, sokudo_Wheel_R
+    global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_Wheel_L, sokudo_Wheel_R, sokudo_Wheel_L_t0, sokudo_Wheel_L_t1, sokudo_Wheel_R_t0, sokudo_Wheel_R_t1
     time_now = time.time()
     if(time_now - time_old > time_interval) :
         time_interval_dt = time_now - time_old
@@ -307,7 +317,10 @@ def keisan() :
         count_R = 0
         time_old = time_now
         kakusokudo_old = kakusokudo
-        sokudo_old = sokudo
+        sokudo_Wheel_L_t1 = sokudo_Wheel_L_t0
+        sokudo_Wheel_L_t0 = sokudo_Wheel_L
+        sokudo_Wheel_R_t1 = sokudo_Wheel_R_t0
+        sokudo_Wheel_R_t0 = sokudo_Wheel_R
         shisei_old = shisei
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y

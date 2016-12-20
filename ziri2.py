@@ -96,9 +96,9 @@ PWM_power = 100
 speed_MAX = 10.8
 
 #PID用的な（笑）泣きそう
-PID_Kp = 1.0
-PID_Ki = 2.0
-PID_Kd = 1.0
+PID_Kp = 0.5
+PID_Ki = 0.5
+PID_Kd = 0.1
 PID_I_L = 0
 PID_I_R = 0
 PID_time_old = 0
@@ -129,6 +129,7 @@ def shisei_cal() :
     print "分子 : " + str(bunshi)
     print "分母 : " + str(bunbo)
     tau = bunshi / bunbo
+    print "tau : " +  str(tau)
     kakudo = math.acos(tau)
     rotation_run(kakudo)
 
@@ -191,8 +192,8 @@ def run_cal(speed, way) :
     add_L = PID_Kp * PID_P_L + PID_Ki * PID_I_L + PID_Kd * PID_D_L
     add_R = PID_Kp * PID_P_R + PID_Ki * PID_I_R + PID_Kd * PID_D_R
     #目標速度に操作量を追加
-    speed_L = Target_speed_L + add_L
-    speed_R = Target_speed_R + add_R
+    speed_L = Target_speed_L - add_L
+    speed_R = Target_speed_R - add_R
     ##目標速度までの差分計算 P制御
     #diff_speed_L_1st = Target_speed_L - sokudo_Wheel_L
     #diff_speed_R_1st = Target_speed_R - sokudo_Wheel_R
@@ -211,8 +212,8 @@ def run_cal(speed, way) :
     #add_L = speed_L
     #add_R = speed_R
     #print "現在の速度_L : " + str(sokudo_Wheel_L)
-    #print "指示速度_L : " + str(speed_L)
-    #print "指示速度_R : " + str(speed_R)
+    print "指示速度_L : " + str(speed_L)
+    print "指示速度_R : " + str(speed_R)
     PID_time_old = PID_time_now
     run_PWM(speed_L, speed_R)
 

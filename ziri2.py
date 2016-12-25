@@ -219,13 +219,12 @@ def run_cal(speed, way) :
 
 #回転、引数はrad
 def rotation_run(Target_kakudo) :
-    #rad => dig(360で見る)
-    kakudo_now = shisei_old / math.pi / 2   # (rad_odl * 180 / pi ) % 360
-    #あれ？これじゃダメじゃね？もしも３６０超えてマイナス見たい時見れなくな？だめじゃん。。。
+    #Rad => Dig(わかりやすくするために)
+    Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
-    if kakudo_now > Target_kakudo + 5 :
+    if Target_kakudo > Target_kakudo + 5.0 :
         run_cal(run_speed,1)
-    elif kakudo_now < Target_kakudo -5 :
+    elif Target_kakudo < Target_kakudo - 5.0 :
         run_cal(run_speed,-1)
     #+-5degになったらとめる
     else :

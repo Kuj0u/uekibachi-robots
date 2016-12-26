@@ -81,7 +81,7 @@ print "読み込み完了"
 
 #自律移動用の変数群
 status_step_now = 0
-run_speed = 2.0   #走行時の移動速度（時速）
+run_speed = 1.0  #走行時の移動速度（時速）
 Target_x = 0
 Target_y = 0
 Target_def = 0.1    #目標との容認誤差。
@@ -101,10 +101,17 @@ PWM_freq = 250.0
 PWM_power = 100.0
 speed_MAX = 10.8
 
+<<<<<<< HEAD
 #PID用的な（笑）泣きそう
 PID_Kp = 0.6
 PID_Ki = 0.5
 PID_Kd = 0.4
+=======
+#PID用的な(笑)泣きそう
+PID_Kp = 0.7
+PID_Ki = 0.7
+PID_Kd = 0.5
+>>>>>>> 0997d103fe7089d655504a50b38b26101ed6845b
 PID_I_L = 0
 PID_I_R = 0
 PID_time_old = 0
@@ -136,6 +143,7 @@ def shisei_cal() :
     #単位ベクトル直すため長さ求める
     vector_len = x_tar + y_tar
     seikika = 1.0 / vector_len
+    print "正規化 : " + str(seikika)
     #正規化
     x_tar = x_tar * seikika
     y_tar = y_tar * seikika
@@ -182,6 +190,11 @@ def run_PWM(speed_L, speed_R) :
     Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
     Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
 
+def motor_stop() :
+    Moter_L1_PWM.ChangeDutyCycle(100)
+    Moter_L2_PWM.ChangeDutyCycle(100)
+    Moter_R1_PWM.ChangeDutyCycle(100)
+    Moter_R2_PWM.ChangeDutyCycle(100)
 
 #走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=cw, -1=ccw, 0=straight)
 def run_cal(speed, way) :
@@ -251,11 +264,12 @@ def rotation_run(Target_kakudo) :
     #+-5degになったらとめる
     else :
         global status_step_now
-        run_cal(0,0)
+        motor_stop()
         status_step_now = 2
 
 def close_end() :
     print "おわり\n"
+    motor_stop()
     GPIO.cleanup()
     #fileopen.close()   #既に閉じてるから大丈夫
     exit()
@@ -415,12 +429,16 @@ try:
                 run_cal(run_speed,0)
             #目標地点なら止まってまた初めからやる
             else :
-                run_cal(0,0)
+                motor_stop()
                 status_step_now = 0
         time.sleep(1)
 
 #except KeyboardInterrupt:
 except :
+<<<<<<< HEAD
+=======
+    motor_stop()
+>>>>>>> 0997d103fe7089d655504a50b38b26101ed6845b
     GPIO.cleanup()
     fileopen.close()
 

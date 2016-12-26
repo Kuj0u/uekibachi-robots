@@ -98,13 +98,13 @@ Moter_R2_Pin = 24
 Moter_L1_Pin = 25
 Moter_L2_Pin = 11
 PWM_freq = 250.0
-PWM_power = 100
+PWM_power = 100.0
 speed_MAX = 10.8
 
 #PID用的な（笑）泣きそう
-PID_Kp = 0.2
-PID_Ki = 0.2
-PID_Kd = 0.1
+PID_Kp = 0.6
+PID_Ki = 0.5
+PID_Kd = 0.4
 PID_I_L = 0
 PID_I_R = 0
 PID_time_old = 0
@@ -145,8 +145,9 @@ def shisei_cal() :
     print "分子 : " + str(bunshi)
     print "分母 : " + str(bunbo)
     tau = bunshi / bunbo
-    print "tau : " +  str(tau)
+    print "tau : " +  str(tau),
     kakudo = math.acos(tau)
+    print "kakudo : " + str(kakudo)
     rotation_run(kakudo)
 
 #log読み取り
@@ -418,7 +419,8 @@ try:
                 status_step_now = 0
         time.sleep(1)
 
-except KeyboardInterrupt:
+#except KeyboardInterrupt:
+except :
     GPIO.cleanup()
     fileopen.close()
 

@@ -101,20 +101,13 @@ PWM_freq = 250.0
 PWM_power = 100.0
 speed_MAX = 10.8
 
-<<<<<<< HEAD
-#PID用的な（笑）泣きそう
-PID_Kp = 0.6
-PID_Ki = 0.5
-PID_Kd = 0.4
-=======
 #PID用的な(笑)泣きそう
-PID_Kp = 0.7
-PID_Ki = 0.7
-PID_Kd = 0.5
->>>>>>> 0997d103fe7089d655504a50b38b26101ed6845b
+PID_Kp = 0.3
+PID_Ki = 0.3
+PID_Kd = 0.2
 PID_I_L = 0
 PID_I_R = 0
-PID_time_old = 0
+PID_time_old = time.time()
 PID_L = 0
 PID_R = 0
 ##########################33
@@ -148,7 +141,7 @@ def shisei_cal() :
     x_tar = x_tar * seikika
     y_tar = y_tar * seikika
     #自分の位置と目標の角度計算
-    bunshi = (x_vir * y_tar) - (y_vir * x_tar)
+    bunshi = (x_vir * y_tar) + (y_vir * x_tar)
     bunbo = (math.sqrt((x_vir * x_vir ) + (y_vir * y_vir))) * (math.sqrt((x_tar * x_tar) + (y_tar *y_tar)))
     print "分子 : " + str(bunshi)
     print "分母 : " + str(bunbo)
@@ -167,7 +160,7 @@ def log_read(read_step) :
     print "読み込んだlogの行数 : " + str(log_list_step_now)
     print "読み込んだ座標 : ",
     print "x : " + str(Target_x) + "\t" + "y : " + str(Target_y)
-    log_list_step_now += 1
+    log_list_step_now += 10
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -191,10 +184,11 @@ def run_PWM(speed_L, speed_R) :
     Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
 
 def motor_stop() :
-    Moter_L1_PWM.ChangeDutyCycle(100)
-    Moter_L2_PWM.ChangeDutyCycle(100)
-    Moter_R1_PWM.ChangeDutyCycle(100)
-    Moter_R2_PWM.ChangeDutyCycle(100)
+    run_PWM(0,0)
+    #Moter_L1_PWM.ChangeDutyCycle(100)
+    #Moter_L2_PWM.ChangeDutyCycle(100)
+    #Moter_R1_PWM.ChangeDutyCycle(100)
+    #Moter_R2_PWM.ChangeDutyCycle(100)
 
 #走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=cw, -1=ccw, 0=straight)
 def run_cal(speed, way) :
@@ -433,12 +427,8 @@ try:
                 status_step_now = 0
         time.sleep(1)
 
-#except KeyboardInterrupt:
-except :
-<<<<<<< HEAD
-=======
+except KeyboardInterrupt:
     motor_stop()
->>>>>>> 0997d103fe7089d655504a50b38b26101ed6845b
     GPIO.cleanup()
     fileopen.close()
 

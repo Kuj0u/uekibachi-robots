@@ -130,9 +130,13 @@ def shisei_cal() :
     #仮想の1m先(仮想ベクトル)を計算
     x_vir = math.cos(shisei_now)
     y_vir = math.sin(shisei_now)
+    v_x[0] = x_vir
+    v_y[0] = y_vir
     #目標までのベクトル
     x_tar = Target_x - x_now
     y_tar = Target_y - y_now
+    v_x[1] = x_tar
+    v_y[1] = y_tar
     #単位ベクトル直すため長さ求める
     vector_len = x_tar + y_tar
     seikika = 1.0 / vector_len
@@ -141,13 +145,25 @@ def shisei_cal() :
     x_tar = x_tar * seikika
     y_tar = y_tar * seikika
     #自分の位置と目標の角度計算
-    bunshi = (x_vir * y_tar) + (y_vir * x_tar)
-    bunbo = (math.sqrt((x_vir * x_vir ) + (y_vir * y_vir))) * (math.sqrt((x_tar * x_tar) + (y_tar *y_tar)))
-    print "分子 : " + str(bunshi)
-    print "分母 : " + str(bunbo)
-    tau = bunshi / bunbo
-    print "tau : " +  str(tau),
-    kakudo = math.acos(tau)
+    tan[0] = math.atan(y_vir / x_vir)
+    tan[1] = math.atan(y_tar / x_tan)
+    i = 0
+    while i<2 :
+        print str(i) + "回目"
+        if  v_x[i] > 0 :
+            if v_y[i] > 0 :
+                tan[i] = 180 - tan[i]
+            else :
+                tan[i] = 180 - abs(tan[i] - 45) * 2
+        i+=1
+    #bunshi = (x_vir * y_tar) + (y_vir * x_tar)
+    #bunbo = (math.sqrt((x_vir * x_vir ) + (y_vir * y_vir))) * (math.sqrt((x_tar * x_tar) + (y_tar *y_tar)))
+    #print "分子 : " + str(bunshi)
+    #print "分母 : " + str(bunbo)
+    #tau = bunshi / bunbo
+    #print "tau : " +  str(tau),
+    #kakudo = math.acos(tau)
+    kakudo = tan[1] - tan[0]
     print "kakudo : " + str(kakudo)
     rotation_run(kakudo)
 

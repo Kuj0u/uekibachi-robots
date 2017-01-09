@@ -273,6 +273,7 @@ def rotation_run(Target_kakudo) :
     #Rad => Dig(わかりやすくするために)
     #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
+    print "目標角度 : " + str(Target_kakudo)
     if Target_kakudo > Target_kakudo + 5.0 :
         run_cal(run_speed,1)
     elif Target_kakudo < Target_kakudo - 5.0 :

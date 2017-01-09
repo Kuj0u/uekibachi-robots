@@ -102,9 +102,9 @@ PWM_power = 100.0
 speed_MAX = 10.8
 
 #PID用的な(笑)泣きそう
-PID_Kp = 0.3
-PID_Ki = 0.3
-PID_Kd = 0.2
+PID_Kp = 0.4
+PID_Ki = 0.4
+PID_Kd = 0.3
 PID_I_L = 0
 PID_I_R = 0
 PID_time_old = time.time()
@@ -151,7 +151,6 @@ def shisei_cal() :
     tan[1] = math.atan(y_tar / x_tar)
     i = 0
     while i<2 :
-        print str(i) + "回目"
         if  v_x[i] > 0 :
             if v_y[i] > 0 :
                 tan[i] = 180 - tan[i]
@@ -166,7 +165,7 @@ def shisei_cal() :
     #print "tau : " +  str(tau),
     #kakudo = math.acos(tau)
     kakudo = tan[1] - tan[0]
-    print " tan[0] : " + str(tan[0]) + " tan[1] " + str(tan[1]) + " diff_dig : " + str(kakudo)
+    #print " tan[0] : " + str(tan[0]) + " tan[1] " + str(tan[1]) + " diff_dig : " + str(kakudo)
     #print "kakudo : " + str(kakudo)
     rotation_run(kakudo)
 
@@ -176,9 +175,9 @@ def log_read(read_step) :
     log_now = log_list[read_step].split('\t')
     Target_x = float(log_now[0])
     Target_y = float(log_now[1])
-    print "読み込んだlogの行数 : " + str(log_list_step_now)
-    print "読み込んだ座標 : ",
-    print "x : " + str(Target_x) + "\t" + "y : " + str(Target_y)
+    #print "読み込んだlogの行数 : " + str(log_list_step_now)
+    #print "読み込んだ座標 : ",
+    #print "x : " + str(Target_x) + "\t" + "y : " + str(Target_y)
     log_list_step_now += 10
 
 #PWM信号変換
@@ -259,12 +258,12 @@ def run_cal(speed, way) :
     #add_L = speed_L
     #add_R = speed_R
     #print "現在の速度_L : " + str(sokudo_Wheel_L)
-    print "目標速度_L : " + str(Target_speed_L),
-    print "目標速度_R : " + str(Target_speed_R)
-    print "指示速度_L : " + str(PID_L),
-    print "指示速度_R : " + str(PID_R)
-    print "現在速度_L : " + str(sokudo_Wheel_L_t0),
-    print "現在速度_R : " + str(sokudo_Wheel_R_t0)
+    #print "目標速度_L : " + str(Target_speed_L),
+    #print "目標速度_R : " + str(Target_speed_R)
+    #print "指示速度_L : " + str(PID_L),
+    #print "指示速度_R : " + str(PID_R)
+    #print "現在速度_L : " + str(sokudo_Wheel_L_t0),
+    #print "現在速度_R : " + str(sokudo_Wheel_R_t0)
     PID_time_old = PID_time_now
     run_PWM(PID_L, PID_R)
 
@@ -273,7 +272,7 @@ def rotation_run(Target_kakudo) :
     #Rad => Dig(わかりやすくするために)
     #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
-    print "目標角度 : " + str(Target_kakudo)
+    #print "目標角度 : " + str(Target_kakudo)
     if Target_kakudo > Target_kakudo + 5.0 :
         run_cal(run_speed,1)
     elif Target_kakudo < Target_kakudo - 5.0 :
@@ -416,6 +415,7 @@ try:
     while True:
         global status_step_now
         print "現在のステップ : " + str(status_step_now)
+        print "座標 x:" + str(zahyou_x_old) + " y:" + str(zahyou_y_old)
         if status_step_now == 0 :
             #いろいろ読み込み
             #USBシリアル受け取り.繋いだらコメントアウト解除

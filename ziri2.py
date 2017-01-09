@@ -81,10 +81,10 @@ print "読み込み完了"
 
 #自律移動用の変数群
 status_step_now = 0
-run_speed = 1.0  #走行時の移動速度（時速）
+run_speed = 0.0  #走行時の移動速度（時速）
 Target_x = 0
 Target_y = 0
-Target_def = 0.1    #目標との容認誤差。
+Target_def = 1.0    #目標との容認誤差。
 brightness_stop = 800
 kakudo = 0
 
@@ -124,6 +124,9 @@ def zahyou_def() :
 def shisei_cal() :
     #とりあえず、位置と姿勢
     global kakudo
+    v_x = [0,0]
+    v_y = [0,0]
+    tan = [0,0]
     shisei_now = shisei_old
     x_now = zahyou_x_old
     y_now = zahyou_y_old
@@ -145,7 +148,7 @@ def shisei_cal() :
     y_tar = y_tar * seikika
     #自分の位置と目標の角度計算
     tan[0] = math.atan(y_vir / x_vir)
-    tan[1] = math.atan(y_tar / x_tan)
+    tan[1] = math.atan(y_tar / x_tar)
     i = 0
     while i<2 :
         print str(i) + "回目"
@@ -213,12 +216,15 @@ def run_cal(speed, way) :
     if way is 0 : 
         Target_speed_L = speed
         Target_speed_R = speed
+        print "直進"
     elif way is 1 :
         Target_speed_L = speed
         Target_speed_R = speed * -1
+        print "右回転"
     elif way is 2 : 
         Target_speed_L = speed * -1
         Target_speed_R = speed
+        print "左回転"
     #目標速度までの差分計算
     #PID制御でやる。パラメータ適宜調整
     PID_time_now = time.time()

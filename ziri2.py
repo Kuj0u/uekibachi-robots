@@ -127,7 +127,6 @@ def shisei_cal() :
     shisei_now = shisei_old
     x_now = zahyou_x_old
     y_now = zahyou_y_old
-    #仮想の1m先(仮想ベクトル)を計算
     x_vir = math.cos(shisei_now)
     y_vir = math.sin(shisei_now)
     v_x[0] = x_vir
@@ -164,7 +163,8 @@ def shisei_cal() :
     #print "tau : " +  str(tau),
     #kakudo = math.acos(tau)
     kakudo = tan[1] - tan[0]
-    print "kakudo : " + str(kakudo)
+    print " tan[0] : " + str(tan[0]) + " tan[1] " + str(tan[1]) + " diff_dig : " + str(kakudo)
+    #print "kakudo : " + str(kakudo)
     rotation_run(kakudo)
 
 #log読み取り
@@ -265,7 +265,7 @@ def run_cal(speed, way) :
 #回転、引数はrad
 def rotation_run(Target_kakudo) :
     #Rad => Dig(わかりやすくするために)
-    Target_kakudo = Target_kakudo * 180.0 / math.pi
+    #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
     if Target_kakudo > Target_kakudo + 5.0 :
         run_cal(run_speed,1)

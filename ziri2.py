@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 
 ###これ変えてね####
 #''のfilenameを適切に変更してください。
@@ -86,7 +86,7 @@ Target_x = 0
 Target_y = 0
 Target_def = 1.0    #目標との容認誤差。
 brightness_stop = 800
-kakudo = 0
+diff_kakudo = 0
 
 #PWM用
 #Moter_L1_Pin = 23
@@ -164,10 +164,10 @@ def shisei_cal() :
     #tau = bunshi / bunbo
     #print "tau : " +  str(tau),
     #kakudo = math.acos(tau)
-    kakudo = tan[1] - tan[0]
+    diff_kakudo = tan[1] - tan[0]
     #print " tan[0] : " + str(tan[0]) + " tan[1] " + str(tan[1]) + " diff_dig : " + str(kakudo)
     #print "kakudo : " + str(kakudo)
-    rotation_run(kakudo)
+    rotation_run(diff_kakudo)
 
 #log読み取り
 def log_read(read_step) :
@@ -208,7 +208,7 @@ def motor_stop() :
     #Moter_R1_PWM.ChangeDutyCycle(100)
     #Moter_R2_PWM.ChangeDutyCycle(100)
 
-#走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=cw, -1=ccw, 0=straight)
+#走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=左回転, -1=右回転, 0=straight)
 def run_cal(speed, way) :
     #回転方向からホイールの速度を定める
     global PID_time_old, PID_I_L, PID_I_R, PID_L, PID_R
@@ -216,11 +216,11 @@ def run_cal(speed, way) :
         Target_speed_L = speed
         Target_speed_R = speed
         print "直進"
-    elif way is 1 :
+    elif way is -1 :
         Target_speed_L = speed
         Target_speed_R = speed * -1
         print "右回転"
-    elif way is 2 : 
+    elif way is 1 : 
         Target_speed_L = speed * -1
         Target_speed_R = speed
         print "左回転"
@@ -273,9 +273,9 @@ def rotation_run(Target_kakudo) :
     #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
     #print "目標角度 : " + str(Target_kakudo)
-    if Target_kakudo > Target_kakudo + 5.0 :
+    if Target_kakudo > 5.0 :
         run_cal(run_speed,1)
-    elif Target_kakudo < Target_kakudo - 5.0 :
+    elif Target_kakudo < -5.0 :
         run_cal(run_speed,-1)
     #+-5degになったらとめる
     else :

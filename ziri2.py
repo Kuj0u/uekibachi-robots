@@ -176,7 +176,10 @@ def log_read(read_step) :
     log_now = log_list[read_step].split('\t')
     Target_x = float(log_now[0])
     Target_y = float(log_now[1])
-    log_list_step_now += 5
+    log_list_step_now += 3
+    if log_list_step_now > log_list_step :
+        log_list_step_now = log_list_step
+    
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -190,7 +193,7 @@ def run_PWM(speed_L, speed_R) :
         Duty_L2 = abs(speed_L)
     if speed_R >= 0 :
         Duty_R1 = speed_R
-        Duty_R2 = 0
+        Duty_R2 = 0 
     elif speed_R < 0 :
         Duty_R1 = 0
         Duty_R2 = abs(speed_R)

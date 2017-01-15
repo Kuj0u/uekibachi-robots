@@ -76,7 +76,7 @@ fileopen = open(log_file_name,'r')
 log_list = fileopen.readlines()
 log_list_step = int(len(log_list)) - 1
 fileopen.close()
-log_list_step_now = 5#最初はゴチャゴチャしてるから５から
+log_list_step_now = 5   #最初はゴチャゴチャしてるから５から
 print "読み込み完了"
 
 #自律移動用の変数群
@@ -173,12 +173,10 @@ def shisei_cal() :
 #log読み取り
 def log_read(read_step) :
     global Target_x, Target_y, log_list_step_now
+    log_list_step_now += 1
     log_now = log_list[read_step].split('\t')
     Target_x = float(log_now[0])
     Target_y = float(log_now[1])
-    log_list_step_now += 3
-    if log_list_step_now > log_list_step :
-        log_list_step_now = log_list_step
     
 
 #PWM信号変換

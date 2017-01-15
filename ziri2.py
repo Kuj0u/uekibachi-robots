@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###これ変えてね####
 #''のfilenameを適切に変更してください。
@@ -139,13 +139,11 @@ def shisei_cal() :
     y_tar = Target_y - y_now
     v_x[1] = x_tar
     v_y[1] = y_tar
-    #単位ベクトル直すため長さ求める
-    vector_len = x_tar + y_tar
-    seikika = 1.0 / vector_len
-    print "正規化 : " + str(seikika)
+    #単位ベクトル直すため正規化
+    vector_len = math.sqrt((x_tar * x_tar) + (y_tar * y_tar))
     #正規化
-    x_tar = x_tar * seikika
-    y_tar = y_tar * seikika
+    x_tar = x_tar / vector_len
+    y_tar = y_tar / vector_len
     #自分の位置と目標の角度計算
     tan[0] = math.atan(y_vir / x_vir)
     tan[1] = math.atan(y_tar / x_tar)
@@ -165,6 +163,7 @@ def shisei_cal() :
     #print "tau : " +  str(tau),
     #kakudo = math.acos(tau)
     diff_kakudo = tan[1] - tan[0]
+    print "差分 %lf (%lf - %lf) " % (diff_kakudo, tan[1], tan[0])
     #print " tan[0] : " + str(tan[0]) + " tan[1] " + str(tan[1]) + " diff_dig : " + str(kakudo)
     #print "kakudo : " + str(kakudo)
     rotation_run(diff_kakudo)
@@ -175,10 +174,7 @@ def log_read(read_step) :
     log_now = log_list[read_step].split('\t')
     Target_x = float(log_now[0])
     Target_y = float(log_now[1])
-    #print "読み込んだlogの行数 : " + str(log_list_step_now)
-    #print "読み込んだ座標 : ",
-    #print "x : " + str(Target_x) + "\t" + "y : " + str(Target_y)
-    log_list_step_now += 10
+    log_list_step_now += 1
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -196,10 +192,14 @@ def run_PWM(speed_L, speed_R) :
     elif speed_R < 0 :
         Duty_R1 = 0
         Duty_R2 = abs(speed_R)
-    Moter_L1_PWM.ChangeDutyCycle(Duty_L1)
-    Moter_L2_PWM.ChangeDutyCycle(Duty_L2)
-    Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
-    Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
+    #Moter_L1_PWM.ChangeDutyCycle(Duty_L1)
+    #Moter_L2_PWM.ChangeDutyCycle(Duty_L2)
+    #Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
+    #Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
+    Moter_L1_PWM.ChangeDutyCycle(0)
+    Moter_L2_PWM.ChangeDutyCycle(0)
+    Moter_R1_PWM.ChangeDutyCycle(0)
+    Moter_R2_PWM.ChangeDutyCycle(0)
 
 def motor_stop() :
     run_PWM(0,0)
@@ -272,7 +272,6 @@ def rotation_run(Target_kakudo) :
     #Rad => Dig(わかりやすくするために)
     #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
-    #print "目標角度 : " + str(Target_kakudo)
     if Target_kakudo > 5.0 :
         run_cal(run_speed,1)
     elif Target_kakudo < -5.0 :
@@ -355,8 +354,8 @@ def keisan() :
         kakudo_R = (2.0 * math.pi * count_R) / Enc_P
         kakusokudo_L = kakudo_L / Gear / time_interval_dt
         kakusokudo_R = kakudo_R / Gear / time_interval_dt
-        sokudo_Wheel_L = kakusokudo_L * Wheel_W / Tread
-        sokudo_Wheel_R = kakusokudo_R * Wheel_W / Tread
+        sokudo_Wheel_L = kakusokudo_L * Wheel_W
+        sokudo_Wheel_R = kakusokudo_R * Wheel_W
         sokudo = (sokudo_Wheel_R + sokudo_Wheel_L) / 2.0
         kakusokudo = (kakusokudo_R - kakusokudo_L) * Wheel_W / Tread
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
@@ -414,8 +413,12 @@ try:
     global status_step_now
     while True:
         global status_step_now
-        print "現在のステップ : " + str(status_step_now)
-        print "座標 x:" + str(zahyou_x_old) + " y:" + str(zahyou_y_old)
+        print "現在のステップ : %d" % (status_step_now)
+        print "読み込みlog : %d / %d" % (log_list_step_now, log_list_step)
+        print "現在座標 x:%lf y:%lf" % (zahyou_x_old, zahyou_y_old)
+        print "目標座標 x:%lf y:%lf" % (Target_x, Target_y)
+        print "現在姿勢 : %lf" % (shisei_old)
+        print "偏差角度 : %lf" % (diff_kakudo) 
         if status_step_now == 0 :
             #いろいろ読み込み
             #USBシリアル受け取り.繋いだらコメントアウト解除
@@ -426,8 +429,6 @@ try:
             #    print "あかる！！\n"
             #    close_end()
             #リストが終わりでなければ次を読み込む
-            print "log_step : " + str(log_list_step)
-            print "log_step_now : " + str(log_list_step_now)
             if log_list_step_now != log_list_step :
                 log_read(log_list_step_now)
                 status_step_now = 1

@@ -258,8 +258,8 @@ def keisan() :
         kakudo_R = (2.0 * math.pi * count_R) / Enc_P
         kakusokudo_L = kakudo_L / Gear / time_interval_dt
         kakusokudo_R = kakudo_R / Gear / time_interval_dt
-        sokudo_Wheel_L = kakusokudo_L * Wheel_W / Tread
-        sokudo_Wheel_R = kakusokudo_R * Wheel_W / Tread
+        sokudo_Wheel_L = kakusokudo_L * Wheel_W
+        sokudo_Wheel_R = kakusokudo_R * Wheel_W
         sokudo = (sokudo_Wheel_R + sokudo_Wheel_L) / 2.0
         kakusokudo = (kakusokudo_R - kakusokudo_L) * Wheel_W / Tread
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old

@@ -76,7 +76,7 @@ fileopen = open(log_file_name,'r')
 log_list = fileopen.readlines()
 log_list_step = int(len(log_list)) - 1
 fileopen.close()
-log_list_step_now = 0
+log_list_step_now = 5   #最初はゴチャゴチャしてるから５から
 print "読み込み完了"
 
 #自律移動用の変数群
@@ -84,7 +84,7 @@ status_step_now = 0
 run_speed = 0.0  #走行時の移動速度（時速）
 Target_x = 0
 Target_y = 0
-Target_def = 1.0    #目標との容認誤差。
+Target_def = 0.1   #目標との容認誤差。
 brightness_stop = 800
 diff_kakudo = 0
 
@@ -137,24 +137,26 @@ def shisei_cal() :
     #目標までのベクトル
     x_tar = Target_x - x_now
     y_tar = Target_y - y_now
-    v_x[1] = x_tar
-    v_y[1] = y_tar
     #単位ベクトル直すため正規化
     vector_len = math.sqrt((x_tar * x_tar) + (y_tar * y_tar))
-    #正規化
-    x_tar = x_tar / vector_len
-    y_tar = y_tar / vector_len
-    #自分の位置と目標の角度計算
-    tan[0] = math.atan(y_vir / x_vir)
-    tan[1] = math.atan(y_tar / x_tar)
-    i = 0
-    while i<2 :
-        if  v_x[i] > 0 :
-            if v_y[i] > 0 :
-                tan[i] = 180 - tan[i]
-            else :
-                tan[i] = 180 - abs(tan[i] - 45) * 2
-        i+=1
+    v_x[1] = x_tar / vector_len
+    v_y[1] = y_tar / vector_len
+    #内積と外積で角度と回転方向を計算
+    naiseki = v_x[0] * v_x[1] + v_y[0] * v_y[1]
+    gaiseki = v_x[0] * v_y[1] - v_y[0] * v_x[1]
+    diff_kakudo = (math.atan2(gaiseki, naiseki) * 180) / math.pi
+    print "差分角度 : %lf" % diff_kakudo
+    ##自分の位置と目標の角度計算
+    #tan[0] = (math.atan(y_vir / x_vir) * 180.0) / math.pi
+    #tan[1] = (math.atan(y_tar / x_tar) * 180.0) / math.pi
+    #i = 0
+    #while i<2 :
+    #    if  v_x[i] > 0 :
+    #        if v_y[i] > 0 :
+    #            tan[i] = 180 - tan[i]
+    ##        else :
+    #            tan[i] = 180 - abs(tan[i] - 45) * 2
+    #    i+=1
     #bunshi = (x_vir * y_tar) + (y_vir * x_tar)
     #bunbo = (math.sqrt((x_vir * x_vir ) + (y_vir * y_vir))) * (math.sqrt((x_tar * x_tar) + (y_tar *y_tar)))
     #print "分子 : " + str(bunshi)
@@ -162,8 +164,8 @@ def shisei_cal() :
     #tau = bunshi / bunbo
     #print "tau : " +  str(tau),
     #kakudo = math.acos(tau)
-    diff_kakudo = tan[1] - tan[0]
-    print "差分 %lf (%lf - %lf) " % (diff_kakudo, tan[1], tan[0])
+    #diff_kakudo = tan[1] - tan[0]
+    #print "差分 %lf (%lf - %lf) " % (diff_kakudo, tan[1], tan[0])
     #print " tan[0] : " + str(tan[0]) + " tan[1] " + str(tan[1]) + " diff_dig : " + str(kakudo)
     #print "kakudo : " + str(kakudo)
     rotation_run(diff_kakudo)
@@ -344,7 +346,6 @@ def enc_count_R(pin) :
     flag_pin_R = pin
     keisan()
 
-
 def keisan() :
     global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_Wheel_L, sokudo_Wheel_R, sokudo_Wheel_L_t0, sokudo_Wheel_L_t1, sokudo_Wheel_L_t2, sokudo_Wheel_R_t0, sokudo_Wheel_R_t1, sokudo_Wheel_R_t2
     time_now = time.time()
@@ -356,7 +357,7 @@ def keisan() :
         kakusokudo_R = kakudo_R / Gear / time_interval_dt
         sokudo_Wheel_L = kakusokudo_L * Wheel_W
         sokudo_Wheel_R = kakusokudo_R * Wheel_W
-        sokudo = (sokudo_Wheel_R + sokudo_Wheel_L) / 2.0
+        sokudo = (sokudo_Wheel_L + sokudo_Wheel_R) / 2.0
         kakusokudo = (kakusokudo_R - kakusokudo_L) * Wheel_W / Tread
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
         zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
@@ -374,6 +375,7 @@ def keisan() :
         sokudo_Wheel_R_t2 = sokudo_Wheel_R_t1
         sokudo_Wheel_R_t1 = sokudo_Wheel_R_t0
         sokudo_Wheel_R_t0 = sokudo_Wheel_R
+        sokudo_old = sokudo
         shisei_old = shisei
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
@@ -417,7 +419,7 @@ try:
         print "読み込みlog : %d / %d" % (log_list_step_now, log_list_step)
         print "現在座標 x:%lf y:%lf" % (zahyou_x_old, zahyou_y_old)
         print "目標座標 x:%lf y:%lf" % (Target_x, Target_y)
-        print "現在姿勢 : %lf" % (shisei_old)
+        print "現在姿勢 : %lf" % (shisei_old*180.0/math.pi)
         print "偏差角度 : %lf" % (diff_kakudo) 
         if status_step_now == 0 :
             #いろいろ読み込み

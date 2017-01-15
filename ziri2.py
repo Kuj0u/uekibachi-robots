@@ -62,12 +62,12 @@ sokudo_Wheel_R_t1 = 0
 sokudo_Wheel_R_t2 = 0
 
 #odometori file set
-#date_now = datetime.datetime.today()
-#fmt_filename_ = "log_ziritu_light_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
-#print fmt_filename
-#odometori_file_w = open(fmt_filename, "w")
-#odometori_file_a = open(fmt_filename, "a")
-#odometori_file_w.close()
+date_now = datetime.datetime.today()
+fmt_filename = "log_ziritu_light_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+print fmt_filename
+odometori_file_w = open(fmt_filename, "w")
+odometori_file_a = open(fmt_filename, "a")
+odometori_file_w.close()
 
 #logの読み込み
 #現在は一度に全部読み込み
@@ -76,7 +76,7 @@ fileopen = open(log_file_name,'r')
 log_list = fileopen.readlines()
 log_list_step = int(len(log_list)) - 1
 fileopen.close()
-log_list_step_now = 5   #最初はゴチャゴチャしてるから５から
+log_list_step_now = 5#最初はゴチャゴチャしてるから５から
 print "読み込み完了"
 
 #自律移動用の変数群
@@ -176,7 +176,7 @@ def log_read(read_step) :
     log_now = log_list[read_step].split('\t')
     Target_x = float(log_now[0])
     Target_y = float(log_now[1])
-    log_list_step_now += 1
+    log_list_step_now += 5
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -362,8 +362,8 @@ def keisan() :
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
         zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
-        #file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
-        #odometori_file_a.write(file_add)
+        file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
+        odometori_file_a.write(file_add)
         #odometori_file_a.close()
         count_L = 0
         count_R = 0

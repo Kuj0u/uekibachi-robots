@@ -4,6 +4,7 @@ import RPi.GPIO as GPIO
 import time
 import math
 import datetime
+import serial
 
 #GPIO_PIN_NO
 GPIO_ENC_LA = 26
@@ -55,6 +56,23 @@ print fmt_filename
 odometori_file_w = open(fmt_filename, "w")
 odometori_file_a = open(fmt_filename, "a")
 odometori_file_w.close()
+
+#serial
+ser = serial.Serial("/dev/ttyACM0", 9600)
+light = 0
+sloil_water = 0
+hot = 0
+humidity = 0
+
+def serial_USB() :
+    global light, sloil_water, hot, humidity
+    list_val = ser.readline().split("\t")
+    if(list_val[0] == "start" and list_val[7] == "\n") :
+        light = (int(list_val[1]) + int(list_val[2]) + int(list_val[3])) / 3
+        sloil_water = int(list_val[4])
+        hot = float(list_val[5])
+        humidity = float(list_val[6])
+
 
 # encoder count bimyo
 def enc_count_L(pin) :
@@ -127,13 +145,14 @@ def keisan() :
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
         zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
+        serial_USB()
         #kokokara print
         print "速度  : " + str(sokudo)
         #print "座標x : " + str(zahyou_x)
         #print "座標y : " + str(zahyou_y)
         #print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
         print "-----"
-        file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
+        file_add = ("%lf\t%lf\t%lf\t%d\t%d\t%lf\t%lf\n") % (zahyou_x, zahyou_y, shisei, light, sloil_water, hot, humidity)
         odometori_file_a.write(file_add)
         #odometori_file_a.close()
         count_L = 0
@@ -160,9 +179,11 @@ GPIO.add_event_detect(GPIO_ENC_RA, GPIO.BOTH, enc_count_R)
 GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 # event wait
 try:
+    ser.readline()
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
     GPIO.cleanup()
     odometori_file_a.close()
+    ser.close()
 

@@ -60,16 +60,17 @@ odometori_file_w.close()
 #serial
 ser = serial.Serial("/dev/ttyACM0", 9600)
 light = 0
-sloil_water = 0
+soil_water = 0
 hot = 0
 humidity = 0
+water_supply = 0
 
 def serial_USB() :
-    global light, sloil_water, hot, humidity
+    global light, soil_water, hot, humidity
     list_val = ser.readline().split("\t")
     if(list_val[0] == "start" and list_val[7] == "\n") :
         light = (int(list_val[1]) + int(list_val[2]) + int(list_val[3])) / 3
-        sloil_water = int(list_val[4])
+        soil_water = int(list_val[4])
         hot = float(list_val[5])
         humidity = float(list_val[6])
 
@@ -152,7 +153,7 @@ def keisan() :
         #print "座標y : " + str(zahyou_y)
         #print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
         print "-----"
-        file_add = ("%lf\t%lf\t%lf\t%d\t%d\t%lf\t%lf\n") % (zahyou_x, zahyou_y, shisei, light, sloil_water, hot, humidity)
+        file_add = ("%lf\t%lf\t%lf\t%d\t%d\t%lf\t%lf\t%lf\n") % (zahyou_x, zahyou_y, shisei, light, soil_water, hot, humidity, water_supply)
         odometori_file_a.write(file_add)
         #odometori_file_a.close()
         count_L = 0

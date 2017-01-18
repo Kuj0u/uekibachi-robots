@@ -1,9 +1,9 @@
-This is e-pTeX, Version 3.14159265-p3.6-141210-2.6 (utf8.euc) (TeX Live 2015/Debian) (preloaded format=platex 2017.1.11)  18 JAN 2017 20:53
+This is e-pTeX, Version 3.14159265-p3.6-141210-2.6 (utf8.euc) (TeX Live 2015/Debian) (preloaded format=platex 2017.1.11)  18 JAN 2017 21:12
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**template.tex
-(./template.tex
+**gaiyou_kansei.tex
+(./gaiyou_kansei.tex
 pLaTeX2e <2006/11/10> (based on LaTeX2e <2016/02/01> patch level 0)
 Babel <3.9n> and hyphenation patterns for 11 languages loaded.
 (./jsarticle.cls
@@ -107,8 +107,8 @@ Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
 \Gm@layoutvoffset=\dimen130
 \Gm@dimlist=\toks16
 )
-(./template.aux)
-\openout1 = `template.aux'.
+(./gaiyou_kansei.aux)
+\openout1 = `gaiyou_kansei.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
@@ -239,14 +239,14 @@ File: img/tsuizyua.png Graphic file (type bmp)
  <img/tsuizyua.png>
 File: img/mizu.png Graphic file (type bmp)
 
-<img/mizu.png> [2] (./template.aux) ) 
+<img/mizu.png> [2] (./gaiyou_kansei.aux) ) 
 Here is how much of TeX's memory you used:
  1455 strings out of 494865
- 18933 string characters out of 6179769
+ 18978 string characters out of 6179769
  84629 words of memory out of 5000000
  4900 multiletter control sequences out of 15000+600000
  12838 words of font info for 60 fonts, out of 8000000 for 9000
  269 hyphenation exceptions out of 8191
- 27i,4n,21p,287b,289s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 27i,4n,21p,292b,289s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on template.dvi (2 pages, 13364 bytes).
+Output written on gaiyou_kansei.dvi (2 pages, 13364 bytes).

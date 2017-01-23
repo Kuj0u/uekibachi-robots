@@ -69,10 +69,12 @@ def serial_USB() :
     global light, soil_water, hot, humidity
     list_val = ser.readline().split("\t")
     if(list_val[0] == "start" and list_val[7] == "\n") :
+        print "センサ読み込み"
         light = (int(list_val[1]) + int(list_val[2]) + int(list_val[3])) / 3
         soil_water = int(list_val[4])
         hot = float(list_val[5])
         humidity = float(list_val[6])
+        time.sleep(0.00001)
 
 
 # encoder count bimyo

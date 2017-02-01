@@ -4,7 +4,7 @@ import time
 import socket
 
 host = '127.0.0.1'
-port = 4000
+port = 3333
 
 def okuru(mozi) :
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

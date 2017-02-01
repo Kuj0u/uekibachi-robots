@@ -36,7 +36,7 @@ def uketori():
   global axis_Ly
   host = '192.168.0.81'
   port = 4000
-  bufsize = 4096
+  bufsize = 512
 
   sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
   with closing(sock):
@@ -44,7 +44,7 @@ def uketori():
     #print(sock.recv(bufsize))
     list= sock.recv(bufsize).split(",")
     #print list
-    axis_Lx = float(list[0])
+    axis_Lx = float(list[0]) * 0.5
     axis_Ly = float(list[1])
     #print axis_Lx
     #print axis_Ly

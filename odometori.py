@@ -5,6 +5,7 @@ import time
 import math
 import datetime
 import serial
+import socket
 
 #GPIO_PIN_NO
 GPIO_ENC_LA = 26
@@ -35,7 +36,7 @@ Gear = 2.0
 Wheel_W = 61.5 / 1000.0 # メートル表記
 Tread = 288.0 / 1000.0 # メートル表記
 time_old = time.time()
-time_interval = 0.5
+time_interval = 0.1
 time_interval_dt = 0
 kakusokudo_old = 0
 shisei_old = 0
@@ -65,17 +66,29 @@ hot = 0
 humidity = 0
 water_supply = 0
 
+#UDP
+host = "127.0.0.1"
+port = 3333
+bufsize = 512
+
+
+def udp_recv() :
+    print "udp読み込み開始"
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((host, port))
+    udp_list= sock.recv(bufsize).split("\t")
+    print udp_list
+    return udp_list
+
 def serial_USB() :
     global light, soil_water, hot, humidity
-    list_val = ser.readline().split("\t")
+    list_val = udp_recv()
     if(list_val[0] == "start" and list_val[7] == "\n") :
         print "センサ読み込み"
-        light = (int(list_val[1]) + int(list_val[2]) + int(list_val[3])) / 3
-        soil_water = int(list_val[4])
+        light = (float(list_val[1]) + float(list_val[2]) + float(list_val[3])) / 3.0
+        soil_water = float(list_val[4])
         hot = float(list_val[5])
         humidity = float(list_val[6])
-        time.sleep(0.00001)
-
 
 # encoder count bimyo
 def enc_count_L(pin) :
@@ -150,10 +163,11 @@ def keisan() :
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
         serial_USB()
         #kokokara print
-        print "速度  : " + str(sokudo)
+        #print "速度  : " + str(sokudo)
         #print "座標x : " + str(zahyou_x)
         #print "座標y : " + str(zahyou_y)
         #print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
+        print "明るさ%lf" % light
         print "-----"
         file_add = ("%lf\t%lf\t%lf\t%d\t%d\t%lf\t%lf\t%lf\n") % (zahyou_x, zahyou_y, shisei, light, soil_water, hot, humidity, water_supply)
         odometori_file_a.write(file_add)
@@ -182,11 +196,12 @@ GPIO.add_event_detect(GPIO_ENC_RA, GPIO.BOTH, enc_count_R)
 GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 # event wait
 try:
-    ser.readline()
     while True:
         time.sleep(1)
-except KeyboardInterrupt:
+finally :
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.close()
     GPIO.cleanup()
     odometori_file_a.close()
-    ser.close()
+    print "おわり"
 

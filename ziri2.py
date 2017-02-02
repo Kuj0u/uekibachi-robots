@@ -454,7 +454,7 @@ try:
                 status_step_now = 0
         time.sleep(1)
 
-except KeyboardInterrupt:
+finally :
     motor_stop()
     GPIO.cleanup()
     fileopen.close()

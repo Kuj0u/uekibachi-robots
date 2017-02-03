@@ -161,7 +161,7 @@ def keisan() :
         shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
         zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
-        serial_USB()
+        #serial_USB()
         #kokokara print
         #print "速度  : " + str(sokudo)
         #print "座標x : " + str(zahyou_x)

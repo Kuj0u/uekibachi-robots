@@ -37,7 +37,7 @@ Gear = 2.0
 Wheel_W = 61.5 / 1000.0 # メートル表記
 Tread = 288.0 / 1000.0 # メートル表記
 time_old = Value("d", time.time())
-time_interval = 0.1
+time_interval = 0.05
 time_interval_dt = Value("d", 0)
 kakusokudo_old = Value("d", 0)
 shisei_old = Value("d", 0)
@@ -139,16 +139,11 @@ def enc_count_R(pin) :
     flag_pin_R.value = pin
 
 
-def keisan() :
+def keisan(enco_count_L, enco_count_R) :
     #global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_L, sokudo_R
     #time_now = time.time()
-    if 1 == 1 :
-        #time_interval_dt = time_now - time_old
-        kakudo_L = (2.0 * math.pi * count_L.value) / Enc_P
-        kakudo_R = (2.0 * math.pi * count_R.value) / Enc_P
-        #早めにcount = 0にする
-        count_L.value = 0
-        count_R.value = 0
+        kakudo_L = (2.0 * math.pi * enco_count_L) / Enc_P
+        kakudo_R = (2.0 * math.pi * enco_count_R) / Enc_P
         kakusokudo_L = kakudo_L / Gear / time_interval_dt.value
         kakusokudo_R = kakudo_R / Gear / time_interval_dt.value
         sokudo_L.value = kakusokudo_L * Wheel_W
@@ -159,11 +154,11 @@ def keisan() :
         zahyou_x = (sokudo * math.cos(shisei) + sokudo_old.value * math.cos(shisei_old.value)) * time_interval_dt.value / 2.0 + zahyou_x_old.value
         zahyou_y = (sokudo * math.sin(shisei) + sokudo_old.value * math.sin(shisei_old.value)) * time_interval_dt.value / 2.0 + zahyou_y_old.value
         #kokokara print
-        #print "速度  : " + str(sokudo)
-        #print "座標x : " + str(zahyou_x)
-        #print "座標y : " + str(zahyou_y)
-        #print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
-        print "明るさ%lf" % light.value
+        print "速度  : " + str(sokudo)
+        print "座標x : " + str(zahyou_x)
+        print "座標y : " + str(zahyou_y)
+        print "姿勢  : " + str(shisei / math.pi * 180) + " deg  ||  " +str(shisei) + " rad"
+        #print "明るさ%lf" % light.value
         print "-----"
         file_add = ("%lf\t%lf\t%lf\t%d\t%d\t%lf\t%lf\t%lf\n") % (zahyou_x, zahyou_y, shisei, light.value, soil_water.value, hot.value, humidity.value, water_supply.value)
         odometori_file_a.write(file_add)
@@ -203,7 +198,11 @@ def odo_keisan():
         time_now = time.time()
         time_interval_dt.value = time_now - time_old.value
         if time_interval < time_interval_dt.value :
-            keisan()
+            l = count_L.value
+            r = count_R.value
+            count_L.value = 0
+            count_R.value = 0
+            keisan(l, r)
             time_old.value = time_now
         else :
             time.sleep(0.01)

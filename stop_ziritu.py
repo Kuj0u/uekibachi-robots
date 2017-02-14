@@ -11,6 +11,8 @@ log_file_name = 'log_odometori.txt'
 #2:sensor使用、環境に応じて移動
 run_mode = 1
 
+#給水ステーションの座標
+water_pos = 0
 
 #######
 
@@ -19,6 +21,8 @@ import time
 import math
 import datetime
 import serial
+import socket
+
 
 #GPIO_PIN_NO
 GPIO_ENC_LA = 26
@@ -68,7 +72,7 @@ sokudo_Wheel_R_t2 = 0
 
 #odometori file set
 date_now = datetime.datetime.today()
-fmt_filename = "log_ziritu_light_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+fmt_filename = "log_ziritu_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
 print fmt_filename
 odometori_file_w = open(fmt_filename, "w")
 odometori_file_a = open(fmt_filename, "a")
@@ -124,12 +128,81 @@ PID_I_R = 0
 PID_time_old = time.time()
 PID_L = 0
 PID_R = 0
-##########################33
+
+#udp
+host = "127.0.0.1"
+port = 3333
+bufsize = 512
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+#sensor
+light = 0
+soil_water = 0
+hot = 0
+humidity = 0
+soil_water_limit = 800
+light_limit = 800
+
+##########################
+
+#ターゲットまで移動
+def move_target(x, y):
+    global status_step_now, Target_precison
+    if status_step_now == 0
+        target_set(x,y)
+        status_step_now += 1
+    if status_step_now == 1 :
+        #shisei_calの中で回転までやってます。
+        shisei_cal()
+        #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
+    if status_step_now == 2 :
+        #目標までの距離を計算
+        target_distance_cal()
+        status_step_now += 1
+    if status_step_now == 3 :
+        #目標距離まで走ったら
+        if Target_distance - now_distance < 0 :
+            motor_stop()
+            
+            #精密ターゲットが設定されている場合
+            if Target_precision == 1 :
+                #目標とズレが少ない場合
+                if zahyou_def() == 1 :
+                    Target_precison = 0
+                    status_step_now =0
+                #ズレが大きれば
+                else :
+                    #statusをもどす
+                    status_step_now -= 2
+            #精密指定なければ
+            else :
+                status_step_now = 0
+        #目標距離まで届いていなければ
+        else :
+            #走る
+            run_cal(run_speed, 0)
+
+#udp
+def udp_recv():
+    sock.bind((host,port))
+    udp_list = sock.recv(bufsize).split("\t")
+    return udp_list
+
+#sensorの値
+def sensor_info():
+    global light, soil_water, hot, humidity
+    list_val = udp_recv()
+    if (list_val[0] == "start" and list_val[7] == "\n"):
+        light = (float(list_val[1]) + float(list_val[2]) + float(list_val[3])) / 3.0
+        soil_water = float(list_val[4])
+        hot = float(list_val[5])
+        humidity = float(list_val[6])
 
 #目標までの距離計算
 def target_distance_cal() :
-    global Target_distance
+    global Target_distance, now_distance
     Target_distance =  math.sqrt((Target_x - zahyou_x_old) * (Target_x - zahyou_x_old) + (Target_y - zahyou_y_old) * (Target_y - zahyou_y_old))
+    now_distance
 
 #座標のズレを評価. 0=まだ離れてる 1=かなり近いね
 def zahyou_def() :
@@ -188,13 +261,18 @@ def shisei_cal() :
     #print "kakudo : " + str(kakudo)
     rotation_run(diff_kakudo)
 
+#target指定
+def target_set(x, y):
+    global Target_x, Target_y
+    Target_x = x
+    Target_y = y
+
 #log読み取り
 def log_read(read_step) :
-    global Target_x, Target_y, log_list_step_now
     log_list_step_now += 1
     log_now = log_list[read_step].split('\t')
-    Target_x = float(log_now[0])
-    Target_y = float(log_now[1])
+    #target_set(float(log_now[0], float(log_now[1]))
+    return log_now
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -300,9 +378,7 @@ def rotation_run(Target_kakudo) :
         run_cal(0.1,-1)
     #+-5degになったらとめる
     else :
-        global status_step_now
         motor_stop()
-        status_step_now += 1
 
 def close_end() :
     print "おわり\n"
@@ -436,70 +512,72 @@ try:
     global status_step_now, Target_precision,Target_distance, now_distance
     print_time_old = time.time()
     while True:
+        if time.time() - print_time_old > 0.1 :
+            print_time_old = time.time()
+            print "現在のステップ : %d" % (status_step_now)
+            print "読み込みlog : %d / %d" % (log_list_step_now, log_list_step)
+            print "現在座標 x:%lf y:%lf" % (zahyou_x_old, zahyou_y_old)
+            print "目標座標 x:%lf y:%lf" % (Target_x, Target_y)
+            print "現在姿勢 : %lf" % (shisei_old*180.0/math.pi)
+            print "偏差角度 : %lf" % diff_kakudo 
+            print "目標との距離 : %lf (%lf - %lf)" % (Target_distance - now_distance, Target_distance, now_distance)
+            print "進行方向:", run_way
+            print "PWM_POWER L:%lf R:%lf" % (pwm_power_L, pwm_power_R)
+        #追従モード
         if run_mode == 1:
-            if time.time() - print_time_old > 0.1 :
-                print_time_old = time.time()
-                print "現在のステップ : %d" % (status_step_now)
-                print "読み込みlog : %d / %d" % (log_list_step_now, log_list_step)
-                print "現在座標 x:%lf y:%lf" % (zahyou_x_old, zahyou_y_old)
-                print "目標座標 x:%lf y:%lf" % (Target_x, Target_y)
-                print "現在姿勢 : %lf" % (shisei_old*180.0/math.pi)
-                print "偏差角度 : %lf" % diff_kakudo 
-                print "目標との距離 : %lf (%lf - %lf)" % (Target_distance - now_distance, Target_distance, now_distance)
-                print "進行方向:", run_way
-                print "PWM_POWER L:%lf R:%lf" % (pwm_power_L, pwm_power_R)
-            if status_step_now == 0 :
-                #いろいろ読み込み
-                #USBシリアル受け取り.繋いだらコメントアウト解除
-                #ser = serial.Serial('/dev/ttyACM0', 9600)
-                #brightness_now = int(ser.readline())
-                #しきい値よりも明るければ止める
-                #if brightness_now > brightness_stop :
-                #    print "あかる！！\n"
-                #    close_end()
-                #リストが終わりでなければ次を読み込む
+            #logからターゲット設定
+            if flag == 0 :
+                #今が最終行でなければ
                 if log_list_step_now != log_list_step :
-                    log_read(log_list_step_now)
-                    status_step_now += 1
-                #それ以外は終了
+                    target_xy = log_read(log_list_step_now)
+                    flag += 1
+                #最終行で閉じる
                 else :
                     close_end()
-            if status_step_now == 1 :
-                #姿勢を整える
-                #shisei_calの中で回転までやってます。
-                shisei_cal()
-                #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
-            if status_step_now == 2 :
-                #目標までの距離を計算
-                target_distance_cal()
-                status_step_now += 1
-            if status_step_now == 3 :
-                #目標距離まで走ったら
-                if Target_distance - now_distance < 0 :
-                    now_distance = 0
-                    motor_stop()
-                    #精密ターゲットが設定されている場合
-                    if Target_precision == 1 :
-                        #目標とズレが少ない場合
-                        if zahyou_def() == 1 :
-                            Target_precison = 0
-                            status_step_now =0
-                        #ズレが大きれば
-                        else :
-                            #statusをもどす
-                            status_step_now -= 2
-                    #精密指定なければ
-                    else :
-                        status_step_now = 0
-                #目標距離まで届いていなければ
+            if flag == 1
+                move_target(float(log_list[0]), float(log_list[1]))
+                #目的地に到着してるか
+                if move_comp == 1
+                    flag =0
+        #demoもーど
+        elif run_mode == 2:
+            global flag
+            #senser読み込み
+            if flag == 0:
+                serch_light_lock = 0
+                motor_stop()
+                #udp_sensor_recv
+                sensor_info()
+                #設定より値が下回ったら、、、特に水分
+                if soil_water < soil_water_limit :
+                    flag = 1
+                elif light < light_limit :
+                    flag = 2
                 else :
-                    #走る
-                    run_cal(run_speed, 0)
-            #センサ読み込み
-            if status_step_now == 4 :
-                udp_sensor_recv()
-        if run_mode == 2:
-            time.sleep(1)
+                    time.sleep(3)
+            #水分補給動作
+            if flag == 1:
+                #ターゲットに移動
+                move_target(water_pos[0], water_pos[1])
+                #到着したら
+                if move_comp == 1
+                    motor_stop()
+                    time.sleep(10)
+                    flag = 2
+            if flag == 2:
+                if serch_light_lock == 0:
+                    serch_light_lock = 1
+                    #現在位置周辺がlightMAX時の座標
+                    if light_scope(zahyou_old_x, zahyou_old_y) == 1
+                        light_target_new = light_max_pos(1, zahyou_old_x, zahyou_old_y)
+                    #離れたところが明るければ
+                    else :
+                        light_target_new = light_max_pos(0, zahyou_old_x, zahyou_old_y)
+                move_target(light_target_new[0],light_target_new[1])
+                if move_comp == 1:
+                    serch_light_lock = 0
+                    motor_stop()
+                    flag = 0
         time.sleep(0.001)
 
 finally :

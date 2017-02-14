@@ -149,7 +149,8 @@ grid_range = [-2, -1, 0, 1, 2]
 
 #ターゲットまで移動
 def move_target(x, y):
-    global status_step_now, Target_precison
+    global status_step_now, Target_precision, move_comp
+    move_comp = 0
     if status_step_now == 0:
         target_set(x,y)
         status_step_now += 1
@@ -170,14 +171,16 @@ def move_target(x, y):
             if Target_precision == 1 :
                 #目標とズレが少ない場合
                 if zahyou_def() == 1 :
-                    Target_precison = 0
+                    Target_precision = 0
                     status_step_now =0
+                    move_comp = 1
                 #ズレが大きれば
                 else :
                     #statusをもどす
                     status_step_now -= 2
             #精密指定なければ
             else :
+                move_comp = 1
                 status_step_now = 0
         #目標距離まで届いていなければ
         else :
@@ -282,7 +285,9 @@ def single_list(list_data,list_range, basho):
     single_list_val = range(100)
     for i in range(list_range):
         readline_val = list_data[i].split("\t")
+        #temp_light = str(readline_val[basho])
         temp_light = float(readline_val[basho])
+        #temp_light = int(temp_light) / 1
         #temp_light = int(temp_light)
         single_list_val[i] = temp_light
     return single_list_val
@@ -335,6 +340,8 @@ def light_max_pos(pass_flag, x, y):
         y = now_pos_list[1] * 5
         x = int(x)
         y = int(y)
+        print x
+        print y
         i = 0
         j = 0
         #該当区域(縦横0-9のみ範囲外は無視)
@@ -346,10 +353,10 @@ def light_max_pos(pass_flag, x, y):
                         #ゼロ埋め
                         light_list_temp[list_num] = int(0)
         #修正をしたlistでmaxを探す
-        print light_list_temp
         light_max_val = max(light_list)
+        print light_max_val
     #maxの場所を探す
-    xy_num = light_max_val.index(light_max_val)
+    xy_num = light_list.index(light_max_val)
     pos_x = int(xy_num) % 10
     pos_y = int(xy_num) / 10
     light_max_pos_xy = [pos_x, pos_y]
@@ -450,6 +457,7 @@ def run_cal(speed, way) :
 
 #回転、引数はrad
 def rotation_run(Target_kakudo) :
+    global status_step_now
     #Rad => Dig(わかりやすくするために)
     #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
@@ -460,6 +468,7 @@ def rotation_run(Target_kakudo) :
     #+-5degになったらとめる
     else :
         motor_stop()
+        status_step_now += 1
 
 def close_end() :
     print "おわり\n"
@@ -590,7 +599,7 @@ GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 
 # event wait
 try:
-    global Target_precision,Target_distance, now_distance, flag
+    global Target_distance, now_distance, flag
     print_time_old = time.time()
     while True:
         if time.time() - print_time_old > 0.1 :
@@ -625,7 +634,6 @@ try:
             #光のmaxを出す
             if flag == 0:
                 log_to_single_light(log_list)
-                first_pos = [0, 0]
                 first_pos = light_max_pos(0, 0, 0)
                 move_target(first_pos[0], first_pos[1])
                 flag = 1
@@ -633,6 +641,7 @@ try:
             if flag == 1:
                 serch_light_lock = 0
                 motor_stop()
+                print "aa:motorstop"
                 #udp_sensor_recv
                 sensor_info()
                 #設定より値が下回ったら、、、特に水分
@@ -656,11 +665,11 @@ try:
                     serch_light_lock = 1
                     light_target_new = [0, 0]
                     #現在位置周辺がlightMAX時の座標
-                    if light_scope(zahyou_old_x, zahyou_old_y) == 1:
-                        light_target_new = light_max_pos(1, zahyou_old_x, zahyou_old_y)
+                    if light_scope(zahyou_x_old, zahyou_y_old) == 1:
+                        light_target_new = light_max_pos(1, zahyou_x_old, zahyou_y_old)
                     #離れたところが明るければ
                     else :
-                        light_target_new = light_max_pos(0, zahyou_old_x, zahyou_old_y)
+                        light_target_new = light_max_pos(0, zahyou_x_old, zahyou_y_old)
                 move_target(light_target_new[0],light_target_new[1])
                 if move_comp == 1:
                     serch_light_lock = 0

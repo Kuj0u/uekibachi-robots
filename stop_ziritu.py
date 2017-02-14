@@ -9,10 +9,10 @@ log_file_name = 'log_odometori.txt'
 #走行モード
 #1:log追従モード
 #2:sensor使用、環境に応じて移動
-run_mode = 1
+run_mode = 2
 
 #給水ステーションの座標
-water_pos = 0
+water_pos = [2,8]
 
 #######
 
@@ -22,7 +22,6 @@ import math
 import datetime
 import serial
 import socket
-
 
 #GPIO_PIN_NO
 GPIO_ENC_LA = 26
@@ -100,6 +99,7 @@ Target_precision = 0
 Target_distance = 0
 now_distance = 0
 run_way = "none"
+flag = 0
 
 #PWM用
 #Moter_L1_Pin = 23
@@ -142,13 +142,15 @@ hot = 0
 humidity = 0
 soil_water_limit = 800
 light_limit = 800
+light_distance_scope = 0.4 #四角の半径というか、1/2辺の長さ+-でやる
+grid_range = [-2, -1, 0, 1, 2]
 
 ##########################
 
 #ターゲットまで移動
 def move_target(x, y):
     global status_step_now, Target_precison
-    if status_step_now == 0
+    if status_step_now == 0:
         target_set(x,y)
         status_step_now += 1
     if status_step_now == 1 :
@@ -274,15 +276,94 @@ def log_read(read_step) :
     #target_set(float(log_now[0], float(log_now[1]))
     return log_now
 
+#list内部から目的の値(区切り)のみのlistに変換
+def single_list(list_data,list_range, basho):
+    i = 0
+    single_list_val = range(100)
+    for i in range(list_range):
+        readline_val = list_data[i].split("\t")
+        temp_light = float(readline_val[basho])
+        #temp_light = int(temp_light)
+        single_list_val[i] = temp_light
+    return single_list_val
+
+#lightのみのlistに
+def log_to_single_light(loglist):
+    global light_list
+    light_list = single_list(loglist, 100, 2)
+
+#現在地点がlistmaxに近いかどうか
+def light_scope(x,y):
+    now_pos = now_pos_02(x,y)
+    light_max_xy = light_max_pos(0,now_pos[0], now_pos[1])
+    i = 0
+    if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] - light_distance_scope) :
+        i = 1
+        if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] - light_distance_scope) :
+            return 1
+    return 0
+
+#現在地点を0.2単位で返す
+def now_pos_02(x, y):
+    now_pos_list = [0, 0]
+    x *= 10
+    x = int(x) / 1
+    x -= x % 2
+    x *= 0.1
+    y *= 10
+    y = int(y) / 1
+    y -= y % 2
+    y *= 0.1
+    now_pos_list[0] = x
+    now_pos_list[1] = y
+    return now_pos_list
+
+
+#light_max_xy
+def light_max_pos(pass_flag, x, y):
+    #maxの値を参照
+    if pass_flag == 0:
+        light_max_val = max(light_list)
+    #当該区域の明るさを0にして別の明るさを求める
+    else :
+        #一時的なリストを取得
+        light_list_temp = light_list
+        #今の場所0.2単位
+        now_pos_list = now_pos_02(x,y)
+        #listように座標と配列番号を整える
+        x = now_pos_list[0] * 5
+        y = now_pos_list[1] * 5
+        x = int(x)
+        y = int(y)
+        i = 0
+        j = 0
+        #該当区域(縦横0-9のみ範囲外は無視)
+        for i in grid_range:
+            if (0 <= x - i and x + i <= 9):
+                for j in grid_range:
+                    if (0 <= y - j and y + j <= 9):
+                        list_num = (int(y) * 10) + int(x)
+                        #ゼロ埋め
+                        light_list_temp[list_num] = int(0)
+        #修正をしたlistでmaxを探す
+        print light_list_temp
+        light_max_val = max(light_list)
+    #maxの場所を探す
+    xy_num = light_max_val.index(light_max_val)
+    pos_x = int(xy_num) % 10
+    pos_y = int(xy_num) / 10
+    light_max_pos_xy = [pos_x, pos_y]
+    return light_max_pos_xy
+
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
     global pwm_power_L, pwm_power_R
     speed_L = speed_L / speed_MAX * PWM_power
     speed_R = speed_R / speed_MAX * PWM_power
-    #上限100
-    if abs(speed_L) > 100.0 :
+    #上限99
+    if abs(speed_L) > 100 :
         speed_L = speed_L / abs(speed_L) * 99.0
-    if abs(speed_R) > 100.0 :
+    if abs(speed_R) > 100 :
         speed_R = speed_R / abs(speed_R) * 99.0
     #pwm_power
     pwm_power_L = speed_L
@@ -509,7 +590,7 @@ GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 
 # event wait
 try:
-    global status_step_now, Target_precision,Target_distance, now_distance
+    global Target_precision,Target_distance, now_distance, flag
     print_time_old = time.time()
     while True:
         if time.time() - print_time_old > 0.1 :
@@ -534,41 +615,48 @@ try:
                 #最終行で閉じる
                 else :
                     close_end()
-            if flag == 1
+            if flag == 1:
                 move_target(float(log_list[0]), float(log_list[1]))
                 #目的地に到着してるか
-                if move_comp == 1
+                if move_comp == 1:
                     flag =0
         #demoもーど
         elif run_mode == 2:
-            global flag
-            #senser読み込み
+            #光のmaxを出す
             if flag == 0:
+                log_to_single_light(log_list)
+                first_pos = [0, 0]
+                first_pos = light_max_pos(0, 0, 0)
+                move_target(first_pos[0], first_pos[1])
+                flag = 1
+            #senser読み込み
+            if flag == 1:
                 serch_light_lock = 0
                 motor_stop()
                 #udp_sensor_recv
                 sensor_info()
                 #設定より値が下回ったら、、、特に水分
                 if soil_water < soil_water_limit :
-                    flag = 1
-                elif light < light_limit :
                     flag = 2
+                elif light < light_limit :
+                    flag = 3
                 else :
                     time.sleep(3)
             #水分補給動作
-            if flag == 1:
+            if flag == 2:
                 #ターゲットに移動
                 move_target(water_pos[0], water_pos[1])
                 #到着したら
-                if move_comp == 1
+                if move_comp == 1:
                     motor_stop()
                     time.sleep(10)
-                    flag = 2
-            if flag == 2:
+                    flag = 3
+            if flag == 3:
                 if serch_light_lock == 0:
                     serch_light_lock = 1
+                    light_target_new = [0, 0]
                     #現在位置周辺がlightMAX時の座標
-                    if light_scope(zahyou_old_x, zahyou_old_y) == 1
+                    if light_scope(zahyou_old_x, zahyou_old_y) == 1:
                         light_target_new = light_max_pos(1, zahyou_old_x, zahyou_old_y)
                     #離れたところが明るければ
                     else :
@@ -577,7 +665,7 @@ try:
                 if move_comp == 1:
                     serch_light_lock = 0
                     motor_stop()
-                    flag = 0
+                    flag = 1
         time.sleep(0.001)
 
 finally :

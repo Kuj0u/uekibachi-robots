@@ -6,6 +6,11 @@
 #正直、姿勢いらないけどね。まとめて取り込んでる。
 log_file_name = 'log_odometori.txt'
 
+#走行モード
+#1:log追従モード
+#2:sensor使用、環境に応じて移動
+run_mode = 1
+
 
 #######
 
@@ -81,12 +86,16 @@ print "読み込み完了"
 
 #自律移動用の変数群
 status_step_now = 0
-run_speed = 0.0  #走行時の移動速度（時速）
+run_speed = 1.0  #走行時の移動速度（時速）
 Target_x = 0
 Target_y = 0
 Target_def = 0.1   #目標との容認誤差。
 brightness_stop = 800
 diff_kakudo = 0
+Target_precision = 0
+Target_distance = 0
+now_distance = 0
+run_way = "none"
 
 #PWM用
 #Moter_L1_Pin = 23
@@ -100,17 +109,27 @@ Moter_L2_Pin = 11
 PWM_freq = 250.0
 PWM_power = 100.0
 speed_MAX = 10.8
+pwm_power_L = 0
+PWM_power_R = 0
 
 #PID用的な(笑)泣きそう
-PID_Kp = 0.4
-PID_Ki = 0.4
-PID_Kd = 0.3
+#PID_Kp = 0.3
+#PID_Ki = 0.4
+#PID_Kd = 0.4
+PID_Kp = 1
+PID_Ki = 1
+PID_Kd = 1
 PID_I_L = 0
 PID_I_R = 0
 PID_time_old = time.time()
 PID_L = 0
 PID_R = 0
 ##########################33
+
+#目標までの距離計算
+def target_distance_cal() :
+    global Target_distance
+    Target_distance =  math.sqrt((Target_x - zahyou_x_old) * (Target_x - zahyou_x_old) + (Target_y - zahyou_y_old) * (Target_y - zahyou_y_old))
 
 #座標のズレを評価. 0=まだ離れてる 1=かなり近いね
 def zahyou_def() :
@@ -123,7 +142,7 @@ def zahyou_def() :
 #姿勢の計算
 def shisei_cal() :
     #とりあえず、位置と姿勢
-    global kakudo
+    global kakudo, diff_kakudo
     v_x = [0,0]
     v_y = [0,0]
     tan = [0,0]
@@ -145,7 +164,6 @@ def shisei_cal() :
     naiseki = v_x[0] * v_x[1] + v_y[0] * v_y[1]
     gaiseki = v_x[0] * v_y[1] - v_y[0] * v_x[1]
     diff_kakudo = (math.atan2(gaiseki, naiseki) * 180) / math.pi
-    print "差分角度 : %lf" % diff_kakudo
     ##自分の位置と目標の角度計算
     #tan[0] = (math.atan(y_vir / x_vir) * 180.0) / math.pi
     #tan[1] = (math.atan(y_tar / x_tar) * 180.0) / math.pi
@@ -177,12 +195,20 @@ def log_read(read_step) :
     log_now = log_list[read_step].split('\t')
     Target_x = float(log_now[0])
     Target_y = float(log_now[1])
-    
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
+    global pwm_power_L, pwm_power_R
     speed_L = speed_L / speed_MAX * PWM_power
     speed_R = speed_R / speed_MAX * PWM_power
+    #上限100
+    if abs(speed_L) > 100.0 :
+        speed_L = speed_L / abs(speed_L) * 99.0
+    if abs(speed_R) > 100.0 :
+        speed_R = speed_R / abs(speed_R) * 99.0
+    #pwm_power
+    pwm_power_L = speed_L
+    pwm_power_R = speed_R
     if speed_L >= 0 :
         Duty_L1 = speed_L
         Duty_L2 = 0
@@ -195,14 +221,10 @@ def run_PWM(speed_L, speed_R) :
     elif speed_R < 0 :
         Duty_R1 = 0
         Duty_R2 = abs(speed_R)
-    #Moter_L1_PWM.ChangeDutyCycle(Duty_L1)
-    #Moter_L2_PWM.ChangeDutyCycle(Duty_L2)
-    #Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
-    #Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
-    Moter_L1_PWM.ChangeDutyCycle(0)
-    Moter_L2_PWM.ChangeDutyCycle(0)
-    Moter_R1_PWM.ChangeDutyCycle(0)
-    Moter_R2_PWM.ChangeDutyCycle(0)
+    Moter_L1_PWM.ChangeDutyCycle(Duty_L1)
+    Moter_L2_PWM.ChangeDutyCycle(Duty_L2)
+    Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
+    Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
 
 def motor_stop() :
     run_PWM(0,0)
@@ -214,19 +236,19 @@ def motor_stop() :
 #走行、引数は速度(+x=正転, -x=逆転)、回転方向(1=左回転, -1=右回転, 0=straight)
 def run_cal(speed, way) :
     #回転方向からホイールの速度を定める
-    global PID_time_old, PID_I_L, PID_I_R, PID_L, PID_R
+    global PID_time_old, PID_I_L, PID_I_R, PID_L, PID_R, run_way
     if way is 0 : 
         Target_speed_L = speed
         Target_speed_R = speed
-        print "直進"
+        run_way= "直進"
     elif way is -1 :
         Target_speed_L = speed
         Target_speed_R = speed * -1
-        print "右回転"
+        run_way= "右回転"
     elif way is 1 : 
         Target_speed_L = speed * -1
         Target_speed_R = speed
-        print "左回転"
+        run_way= "左回転"
     #目標速度までの差分計算
     #PID制御でやる。パラメータ適宜調整
     PID_time_now = time.time()
@@ -238,11 +260,8 @@ def run_cal(speed, way) :
     PID_D_L = (Target_speed_L - sokudo_Wheel_L_t0) - (sokudo_Wheel_L_t1 - sokudo_Wheel_L_t2)
     PID_D_R = (Target_speed_R - sokudo_Wheel_R_t0) - (sokudo_Wheel_R_t1 - sokudo_Wheel_R_t2)
     #操作量
-    add_L = PID_Kp * PID_P_L + PID_Ki * PID_I_L + PID_Kd * PID_D_L
-    add_R = PID_Kp * PID_P_R + PID_Ki * PID_I_R + PID_Kd * PID_D_R
-    #目標速度に操作量を追加
-    PID_L = PID_L + add_L
-    PID_R = PID_R + add_R
+    PID_L = PID_Kp * PID_P_L + PID_Ki * PID_I_L + PID_Kd * PID_D_L
+    PID_R = PID_Kp * PID_P_R + PID_Ki * PID_I_R + PID_Kd * PID_D_R
     ##目標速度までの差分計算 P制御
     #diff_speed_L_1st = Target_speed_L - sokudo_Wheel_L
     #diff_speed_R_1st = Target_speed_R - sokudo_Wheel_R
@@ -276,14 +295,14 @@ def rotation_run(Target_kakudo) :
     #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
     if Target_kakudo > 5.0 :
-        run_cal(run_speed,1)
+        run_cal(0.1,1)
     elif Target_kakudo < -5.0 :
-        run_cal(run_speed,-1)
+        run_cal(0.1,-1)
     #+-5degになったらとめる
     else :
         global status_step_now
         motor_stop()
-        status_step_now = 2
+        status_step_now += 1
 
 def close_end() :
     print "おわり\n"
@@ -348,7 +367,7 @@ def enc_count_R(pin) :
     keisan()
 
 def keisan() :
-    global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_Wheel_L, sokudo_Wheel_R, sokudo_Wheel_L_t0, sokudo_Wheel_L_t1, sokudo_Wheel_L_t2, sokudo_Wheel_R_t0, sokudo_Wheel_R_t1, sokudo_Wheel_R_t2
+    global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_Wheel_L, sokudo_Wheel_R, sokudo_Wheel_L_t0, sokudo_Wheel_L_t1, sokudo_Wheel_L_t2, sokudo_Wheel_R_t0, sokudo_Wheel_R_t1, sokudo_Wheel_R_t2, now_distance
     time_now = time.time()
     if(time_now - time_old > time_interval) :
         time_interval_dt = time_now - time_old
@@ -378,6 +397,7 @@ def keisan() :
         sokudo_Wheel_R_t0 = sokudo_Wheel_R
         sokudo_old = sokudo
         shisei_old = shisei
+        now_distance += math.sqrt((zahyou_x - zahyou_x_old) * (zahyou_x - zahyou_x_old) + (zahyou_y - zahyou_y_old) * (zahyou_y - zahyou_y_old))
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
  
@@ -413,48 +433,77 @@ GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 
 # event wait
 try:
-    global status_step_now
+    global status_step_now, Target_precision,Target_distance, now_distance
+    print_time_old = time.time()
     while True:
-        global status_step_now
-        print "現在のステップ : %d" % (status_step_now)
-        print "読み込みlog : %d / %d" % (log_list_step_now, log_list_step)
-        print "現在座標 x:%lf y:%lf" % (zahyou_x_old, zahyou_y_old)
-        print "目標座標 x:%lf y:%lf" % (Target_x, Target_y)
-        print "現在姿勢 : %lf" % (shisei_old*180.0/math.pi)
-        print "偏差角度 : %lf" % (diff_kakudo) 
-        if status_step_now == 0 :
-            #いろいろ読み込み
-            #USBシリアル受け取り.繋いだらコメントアウト解除
-            #ser = serial.Serial('/dev/ttyACM0', 9600)
-            #brightness_now = int(ser.readline())
-            #しきい値よりも明るければ止める
-            #if brightness_now > brightness_stop :
-            #    print "あかる！！\n"
-            #    close_end()
-            #リストが終わりでなければ次を読み込む
-            if log_list_step_now != log_list_step :
-                log_read(log_list_step_now)
-                status_step_now = 1
-            #それ以外は終了
-            else :
-                close_end()
-        if status_step_now == 1 :
-            #姿勢を整える
-            #shisei_calの中で回転までやってます。
-            shisei_cal()
-            #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
-        if status_step_now == 2 :
-            #走行します。
-            #目標地点でなければ走り続ける
-            if zahyou_def() != 1 :
-                run_cal(run_speed,0)
-            #目標地点なら止まってまた初めからやる
-            else :
-                motor_stop()
-                status_step_now = 0
-        time.sleep(1)
+        if run_mode == 1:
+            if time.time() - print_time_old > 0.1 :
+                print_time_old = time.time()
+                print "現在のステップ : %d" % (status_step_now)
+                print "読み込みlog : %d / %d" % (log_list_step_now, log_list_step)
+                print "現在座標 x:%lf y:%lf" % (zahyou_x_old, zahyou_y_old)
+                print "目標座標 x:%lf y:%lf" % (Target_x, Target_y)
+                print "現在姿勢 : %lf" % (shisei_old*180.0/math.pi)
+                print "偏差角度 : %lf" % diff_kakudo 
+                print "目標との距離 : %lf (%lf - %lf)" % (Target_distance - now_distance, Target_distance, now_distance)
+                print "進行方向:", run_way
+                print "PWM_POWER L:%lf R:%lf" % (pwm_power_L, pwm_power_R)
+            if status_step_now == 0 :
+                #いろいろ読み込み
+                #USBシリアル受け取り.繋いだらコメントアウト解除
+                #ser = serial.Serial('/dev/ttyACM0', 9600)
+                #brightness_now = int(ser.readline())
+                #しきい値よりも明るければ止める
+                #if brightness_now > brightness_stop :
+                #    print "あかる！！\n"
+                #    close_end()
+                #リストが終わりでなければ次を読み込む
+                if log_list_step_now != log_list_step :
+                    log_read(log_list_step_now)
+                    status_step_now += 1
+                #それ以外は終了
+                else :
+                    close_end()
+            if status_step_now == 1 :
+                #姿勢を整える
+                #shisei_calの中で回転までやってます。
+                shisei_cal()
+                #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
+            if status_step_now == 2 :
+                #目標までの距離を計算
+                target_distance_cal()
+                status_step_now += 1
+            if status_step_now == 3 :
+                #目標距離まで走ったら
+                if Target_distance - now_distance < 0 :
+                    now_distance = 0
+                    motor_stop()
+                    #精密ターゲットが設定されている場合
+                    if Target_precision == 1 :
+                        #目標とズレが少ない場合
+                        if zahyou_def() == 1 :
+                            Target_precison = 0
+                            status_step_now =0
+                        #ズレが大きれば
+                        else :
+                            #statusをもどす
+                            status_step_now -= 2
+                    #精密指定なければ
+                    else :
+                        status_step_now = 0
+                #目標距離まで届いていなければ
+                else :
+                    #走る
+                    run_cal(run_speed, 0)
+            #センサ読み込み
+            if status_step_now == 4 :
+                udp_sensor_recv()
+        if run_mode == 2:
+            time.sleep(1)
+        time.sleep(0.001)
 
 finally :
+    print "END"
     motor_stop()
     GPIO.cleanup()
     fileopen.close()

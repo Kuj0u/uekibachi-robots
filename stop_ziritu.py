@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+PID_Kp = 2
+PID_Ki = 0.1
+PID_Kd = 7
+
 ###これ変えてね####
 #''のfilenameを適切に変更してください。
 #フォーマットは  x座標 (tab) y座標 (tab) 姿勢 (改行)
@@ -120,9 +124,6 @@ PWM_power_R = 0
 #PID_Kp = 0.3
 #PID_Ki = 0.4
 #PID_Kd = 0.4
-PID_Kp = 1
-PID_Ki = 1
-PID_Kd = 1
 PID_I_L = 0
 PID_I_R = 0
 PID_time_old = time.time()
@@ -140,10 +141,11 @@ light = 0
 soil_water = 0
 hot = 0
 humidity = 0
-soil_water_limit = 800
+soil_water_limit = 500
 light_limit = 800
 light_distance_scope = 0.4 #四角の半径というか、1/2辺の長さ+-でやる
 grid_range = [-2, -1, 0, 1, 2]
+ima = "none"
 
 ##########################
 
@@ -359,6 +361,8 @@ def light_max_pos(pass_flag, x, y):
     xy_num = light_list.index(light_max_val)
     pos_x = int(xy_num) % 10
     pos_y = int(xy_num) / 10
+    pos_x = pos_x * 0.2
+    pos_y = pos_y * 0.2
     light_max_pos_xy = [pos_x, pos_y]
     return light_max_pos_xy
 
@@ -391,9 +395,14 @@ def run_PWM(speed_L, speed_R) :
     Moter_L2_PWM.ChangeDutyCycle(Duty_L2)
     Moter_R1_PWM.ChangeDutyCycle(Duty_R1)
     Moter_R2_PWM.ChangeDutyCycle(Duty_R2)
+    #Moter_L1_PWM.ChangeDutyCycle(0)
+    #Moter_L2_PWM.ChangeDutyCycle(0)
+    #Moter_R1_PWM.ChangeDutyCycle(0)
+    #Moter_R2_PWM.ChangeDutyCycle(0)
 
 def motor_stop() :
-    run_PWM(0,0)
+    time.sleep(0.001)
+    #run_PWM(0,0)
     #Moter_L1_PWM.ChangeDutyCycle(100)
     #Moter_L2_PWM.ChangeDutyCycle(100)
     #Moter_R1_PWM.ChangeDutyCycle(100)
@@ -462,9 +471,9 @@ def rotation_run(Target_kakudo) :
     #Target_kakudo = Target_kakudo * 180.0 / math.pi
     #+-5degでないときは回す
     if Target_kakudo > 5.0 :
-        run_cal(0.1,1)
+        run_cal(0.5,1)
     elif Target_kakudo < -5.0 :
-        run_cal(0.1,-1)
+        run_cal(0.5,-1)
     #+-5degになったらとめる
     else :
         motor_stop()
@@ -599,7 +608,7 @@ GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
 
 # event wait
 try:
-    global Target_distance, now_distance, flag
+    global Target_distance, now_distance, flag, ima
     print_time_old = time.time()
     while True:
         if time.time() - print_time_old > 0.1 :
@@ -613,6 +622,9 @@ try:
             print "目標との距離 : %lf (%lf - %lf)" % (Target_distance - now_distance, Target_distance, now_distance)
             print "進行方向:", run_way
             print "PWM_POWER L:%lf R:%lf" % (pwm_power_L, pwm_power_R)
+            print "センサ　現在　light:%lf mizu:%lf" % (light, soil_water)
+            print "センサ　設定　light:%lf mizu:%lf" % (light_limit, soil_water_limit)
+            print "行動:",ima
         #追従モード
         if run_mode == 1:
             #logからターゲット設定
@@ -641,16 +653,19 @@ try:
             if flag == 1:
                 serch_light_lock = 0
                 motor_stop()
-                print "aa:motorstop"
                 #udp_sensor_recv
                 sensor_info()
                 #設定より値が下回ったら、、、特に水分
-                if soil_water < soil_water_limit :
+                if soil_water > soil_water_limit :
                     flag = 2
+                    ima = "水"
                 elif light < light_limit :
                     flag = 3
+                    ima = "光"
                 else :
-                    time.sleep(3)
+                    ima = "寝"
+                    flag = 1
+                    #time.sleep(3)
             #水分補給動作
             if flag == 2:
                 #ターゲットに移動

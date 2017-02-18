@@ -2,7 +2,7 @@
 
 PID_Kp = 2
 PID_Ki = 0.1
-PID_Kd = 7
+PID_Kd = 8
 
 ###これ変えてね####
 #''のfilenameを適切に変更してください。
@@ -16,7 +16,7 @@ log_file_name = 'log_odometori.txt'
 run_mode = 2
 
 #給水ステーションの座標
-water_pos = [2,8]
+water_pos = [1.8,1.0]
 
 #######
 
@@ -141,7 +141,7 @@ light = 0
 soil_water = 0
 hot = 0
 humidity = 0
-soil_water_limit = 500
+soil_water_limit = 800
 light_limit = 800
 light_distance_scope = 0.4 #四角の半径というか、1/2辺の長さ+-でやる
 grid_range = [-2, -1, 0, 1, 2]
@@ -645,6 +645,7 @@ try:
         elif run_mode == 2:
             #光のmaxを出す
             if flag == 0:
+                #time.sleep(5)
                 log_to_single_light(log_list)
                 first_pos = light_max_pos(0, 0, 0)
                 move_target(first_pos[0], first_pos[1])
@@ -666,6 +667,7 @@ try:
                     ima = "寝"
                     flag = 1
                     #time.sleep(3)
+                print ima
             #水分補給動作
             if flag == 2:
                 #ターゲットに移動

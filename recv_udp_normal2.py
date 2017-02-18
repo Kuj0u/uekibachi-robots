@@ -44,7 +44,7 @@ def uketori():
     #print(sock.recv(bufsize))
     list= sock.recv(bufsize).split(",")
     #print list
-    axis_Lx = float(list[0]) * 0.5
+    axis_Lx = float(list[0])
     axis_Ly = float(list[1])
     #print axis_Lx
     #print axis_Ly
@@ -64,8 +64,8 @@ while True:
         print "o-no-"
         exit()
     #power save
-    wheel_L = wheel_L * 50
-    wheel_R = wheel_R * 50
+    wheel_L = wheel_L * 75
+    wheel_R = wheel_R * 75
     print "L=%f" % (wheel_L)
     print "R=%f" % (wheel_R)
     #CW or CCW

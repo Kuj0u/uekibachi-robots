@@ -333,11 +333,11 @@ def light_max_pos(pass_flag, x, y):
         light_max_val = max(light_list)
     #当該区域の明るさを0にして別の明るさを求める
     else :
-        #一時的なリストを取得
+        #一時的な照度リストを取得
         light_list_temp = light_list
-        #今の場所0.2単位
+        #今の場所0.2単位で取得
         now_pos_list = now_pos_02(x,y)
-        #listように座標と配列番号を整える
+        #座標系をlist番号に変更する
         x = now_pos_list[0] * 5
         y = now_pos_list[1] * 5
         x = int(x)
@@ -347,6 +347,7 @@ def light_max_pos(pass_flag, x, y):
         i = 0
         j = 0
         #該当区域(縦横0-9のみ範囲外は無視)
+        #for文よくないけど、しらん。気になったら変える。
         for i in grid_range:
             if (0 <= x - i and x + i <= 9):
                 for j in grid_range:
@@ -359,6 +360,7 @@ def light_max_pos(pass_flag, x, y):
         print light_max_val
     #maxの場所を探す
     xy_num = light_list.index(light_max_val)
+    #list番号を座標系に戻す
     pos_x = int(xy_num) % 10
     pos_y = int(xy_num) / 10
     pos_x = pos_x * 0.2
@@ -371,7 +373,7 @@ def run_PWM(speed_L, speed_R) :
     global pwm_power_L, pwm_power_R
     speed_L = speed_L / speed_MAX * PWM_power
     speed_R = speed_R / speed_MAX * PWM_power
-    #上限99
+    #上限99で抑える
     if abs(speed_L) > 100 :
         speed_L = speed_L / abs(speed_L) * 99.0
     if abs(speed_R) > 100 :

@@ -304,9 +304,9 @@ def light_scope(x,y):
     now_pos = now_pos_02(x,y)
     light_max_xy = light_max_pos(0,now_pos[0], now_pos[1])
     i = 0
-    if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] - light_distance_scope) :
+    if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] + light_distance_scope) :
         i = 1
-        if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] - light_distance_scope) :
+        if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] + light_distance_scope) :
             return 1
     return 0
 
@@ -679,20 +679,25 @@ try:
                     motor_stop()
                     time.sleep(10)
                     flag = 3
+            #光ある地へ
             if flag == 3:
                 if serch_light_lock == 0:
                     serch_light_lock = 1
                     light_target_new = [0, 0]
                     #現在位置周辺がlightMAX時の座標
                     if light_scope(zahyou_x_old, zahyou_y_old) == 1:
+                        #今から離れた地点でlight_max探す
                         light_target_new = light_max_pos(1, zahyou_x_old, zahyou_y_old)
-                    #離れたところが明るければ
                     else :
+                        #普通にlistからlight_max探す
                         light_target_new = light_max_pos(0, zahyou_x_old, zahyou_y_old)
+                #指定地点へ移動
                 move_target(light_target_new[0],light_target_new[1])
+                #到着したら
                 if move_comp == 1:
                     serch_light_lock = 0
                     motor_stop()
+                    #flagを１に
                     flag = 1
         time.sleep(0.001)
 

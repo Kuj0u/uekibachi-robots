@@ -16,7 +16,7 @@ log_file_name = 'log_odometori.txt'
 run_mode = 2
 
 #給水ステーションの座標
-water_pos = [1.8,1.0]
+water_pos = [1.0,1.0]
 
 #######
 

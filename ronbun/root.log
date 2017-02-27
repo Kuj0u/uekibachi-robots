@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.14159265-p3.6-141210-2.6 (utf8.euc) (TeX Live 2015/Debian) (preloaded format=platex 2017.1.11)  20 FEB 2017 07:12
+This is e-pTeX, Version 3.14159265-p3.6-141210-2.6 (utf8.euc) (TeX Live 2015/Debian) (preloaded format=platex 2017.1.11)  27 FEB 2017 09:52
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -271,8 +271,8 @@ LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <12> not available
 
 ]
 ! Text line contains an invalid character.
-l.33 \contentsline {chapter}{^^8e^^@
-                                    ^^8e�}{14}
+l.38 \contentsline {chapter}{^^8e^^@
+                                    ^^8e�}{15}
 ? 
 Missing character: There is no ^^8e in font cmbx12!
 Missing character: There is no ^^8e in font cmbx12!
@@ -316,37 +316,19 @@ Missing character: There is no ^^ab in font cmbx12!
  (./chp-3.tex
 第 3 章
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <14.4> not available
-(Font)              Font shape `JT1/gt/m/n' tried instead on input line 8.
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 11.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <14.4> not available
-(Font)              Font shape `JY1/gt/m/n' tried instead on input line 8.
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 11.
 [7
 
 
 
-]
-! Undefined control sequence.
-l.44 \subsubsubsection
-                      {照度センサ}
-? 
-! Undefined control sequence.
-l.51 \subsubsubsection
-                      {土壌水分センサ}
-? 
-[8]
-! Undefined control sequence.
-l.58 \subsubsubsection
-                      {温湿度センサ}
-? 
-! Undefined control sequence.
-l.65 \subsubsubsection
-                      {Arduino}
-? 
-[9]) [10]
+] [8] [9]) [10] [11]
 \openout2 = `chp-4.aux'.
 
  (./chp-4.tex
 第 4 章
-) [11
+) [12
 
 
 
@@ -355,7 +337,7 @@ l.65 \subsubsubsection
 
  (./chp-5.tex
 第 5 章
-) [12
+) [13
 
 
 
@@ -364,7 +346,7 @@ l.65 \subsubsubsection
 
  (./chp-6.tex
 第 6 章
-) [13
+) [14
 
 
 
@@ -374,18 +356,18 @@ l.65 \subsubsubsection
  (./thanks.tex
 第 7 章
 Missing character: There is no ^^bf in font cmr12!
-) [14
+) [15
 
 
 
 ]
 \openout2 = `mybib.aux'.
 
- (./mybib.tex [15
+ (./mybib.tex [16
 
 
 
-]) [16]
+]) [17]
 ! Extra \else.
 \@include ...ediate \closeout \@partaux \fi \else 
                                                   \deadcycles \z@ \@nameuse ...
@@ -409,4 +391,4 @@ Here is how much of TeX's memory you used:
  264 hyphenation exceptions out of 8191
  29i,7n,24p,303b,255s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on root.dvi (18 pages, 23428 bytes).
+Output written on root.dvi (19 pages, 25552 bytes).

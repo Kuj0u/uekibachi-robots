@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.14159265-p3.6-141210-2.6 (utf8.euc) (TeX Live 2015/Debian) (preloaded format=platex 2017.1.11)  27 FEB 2017 09:52
+This is e-pTeX, Version 3.14159265-p3.6-141210-2.6 (utf8.euc) (TeX Live 2015/Debian) (preloaded format=platex 2017.1.11)  27 FEB 2017 16:16
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -214,8 +214,7 @@ Overfull \hbox (8.76976pt too wide) in paragraph at lines 79--69
 LaTeX Warning: Unused global option(s):
     [epsbox,epsf,eclepsf,subfigure].
 
-(./root.aux (./chp-1.aux) (./chp-2.aux) (./chp-3.aux) (./chp-4.aux)
-(./chp-5.aux) (./chp-6.aux) (./thanks.aux) (./mybib.aux))
+(./root.aux (./chp-1.aux))
 \openout1 = `root.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 10.
@@ -266,129 +265,45 @@ LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <12> not available
 (Font)              Font shape `JT1/gt/m/n' tried instead on input line 1.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <12> not available
 (Font)              Font shape `JY1/gt/m/n' tried instead on input line 1.
-
-[1
-
-]
-! Text line contains an invalid character.
-l.38 \contentsline {chapter}{^^8e^^@
-                                    ^^8e�}{15}
-? 
-Missing character: There is no ^^8e in font cmbx12!
-Missing character: There is no ^^8e in font cmbx12!
-Missing character: There is no ^^ab in font cmbx12!
 )
 \tf@toc=\write3
 \openout3 = `root.toc'.
 
- [2] (./root.lof)
+
+[1
+
+] (./root.lof)
 \tf@lof=\write4
 \openout4 = `root.lof'.
 
- [3
+ [2
 
 ] (./root.lot)
 \tf@lot=\write5
 \openout5 = `root.lot'.
 
- [4
+ [3
 
 ]
 \openout2 = `chp-1.aux'.
 
  (./chp-1.tex
 第 1 章
-) [5
-
-
-]
-\openout2 = `chp-2.aux'.
-
- (./chp-2.tex
-第 2 章
-) [6
-
-
-
-]
-\openout2 = `chp-3.aux'.
-
- (./chp-3.tex
-第 3 章
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <14.4> not available
-(Font)              Font shape `JT1/gt/m/n' tried instead on input line 11.
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 7.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <14.4> not available
-(Font)              Font shape `JY1/gt/m/n' tried instead on input line 11.
-[7
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 7.
+[4
 
 
-
-] [8] [9]) [10] [11]
-\openout2 = `chp-4.aux'.
-
- (./chp-4.tex
-第 4 章
-) [12
-
-
-
-]
-\openout2 = `chp-5.aux'.
-
- (./chp-5.tex
-第 5 章
-) [13
-
-
-
-]
-\openout2 = `chp-6.aux'.
-
- (./chp-6.tex
-第 6 章
-) [14
-
-
-
-]
-\openout2 = `thanks.aux'.
-
- (./thanks.tex
-第 7 章
-Missing character: There is no ^^bf in font cmr12!
-) [15
-
-
-
-]
-\openout2 = `mybib.aux'.
-
- (./mybib.tex [16
-
-
-
-]) [17]
-! Extra \else.
-\@include ...ediate \closeout \@partaux \fi \else 
-                                                  \deadcycles \z@ \@nameuse ...
-l.57 \include{mybib}
-                    
-? 
-! Extra \fi.
-\include ...e nested}\@eha \else \@include #1 \fi 
-                                                  
-l.57 \include{mybib}
-                    
-? 
-(./root.aux (./chp-1.aux) (./chp-2.aux) (./chp-3.aux) (./chp-4.aux)
-(./chp-5.aux) (./chp-6.aux) (./thanks.aux) (./mybib.aux)) ) 
+] [5] [6]) [7] [8] (./root.aux (./chp-1.aux)) ) 
 Here is how much of TeX's memory you used:
- 1938 strings out of 494865
- 23022 string characters out of 6179769
- 84882 words of memory out of 5000000
- 5283 multiletter control sequences out of 15000+600000
+ 1874 strings out of 494865
+ 22422 string characters out of 6179769
+ 82882 words of memory out of 5000000
+ 5267 multiletter control sequences out of 15000+600000
  22148 words of font info for 86 fonts, out of 8000000 for 9000
  264 hyphenation exceptions out of 8191
- 29i,7n,24p,303b,255s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 29i,7n,24p,253b,222s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on root.dvi (19 pages, 25552 bytes).
+Output written on root.dvi (10 pages, 14352 bytes).

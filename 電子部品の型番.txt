@@ -57,3 +57,4 @@ UnoにするかMegaにするか検討中　多分多分Uno二つになるとおもう
 割り込みピン：6本(デジタル入出力側の2,3,18,19,20,21ピン)
 仕様表：https://trac.switch-science.com/wiki/ArduinoMega
 ピン図：https://arduino-info.wikispaces.com/file/view/Mega2-900.jpg/421499040/Mega2-900.jpg
+※20,21ピンはI2C通信で使うため実質4ピンしか割り込めない

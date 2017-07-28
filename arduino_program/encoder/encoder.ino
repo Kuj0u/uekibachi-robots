@@ -75,6 +75,7 @@ void count_L(){
   oldLA = newLA;
   oldLB = newLB;
 
+  /*
   int ans[5];
   ans[0] = !digitalRead(enc_LA);
   ans[1] = !digitalRead(enc_LB);
@@ -82,6 +83,7 @@ void count_L(){
   ans[3] = !digitalRead(enc_RB);
 
   // デバッグ
+  
   Serial.print("A:");
   Serial.print(ans[0]);
   Serial.print(" ");
@@ -91,46 +93,11 @@ void count_L(){
   Serial.print("countL:");
   Serial.print(countL, DEC); //byte型はDECをつけるといいぞ！
   Serial.println(" ");
-}
-
-void sendCounter(){
-  Wire.write((char *)&countL,2);
-  countL = 0;
-  sendcount = 0;
-}
-
-void ENC_Read(){
-  int ans[5];
-
-  ans[0] = !digitalRead(enc_LA);
-  ans[1] = !digitalRead(enc_LB);
-  ans[2] = !digitalRead(enc_RA);
-  ans[3] = !digitalRead(enc_RB);
-
-  /* デバッグ
-  Serial.print("A:");
-  Serial.print(ans[0]);
-  Serial.print(" ");
-  Serial.print("B:");
-  Serial.print(ans[1]);
-  Serial.println(" ");
   */
 }
 
-/*
-void sending{
-  //各エンコーダの状態を読み取る
-  int e_LA = digitalRead(enc_LA);
-  int e_LB = digitalRead(enc_LB);
-  //e_RA = digitalRead(enc_RA);
-  //e_RB = digitalRead(enc_RB);
-  //各エンコーダの状態を送信
-  Wire.write((char*)&count,8);
-  //Wire.write(e_LB);
-  //Wire.write(e_RA);
-  //Wire.write(e_RB);
-  Serial.println(e_LA);
-  Serial.println(e_LB);
+void sendCounter(){
+  Wire.write((byte *)&countL,2);
+  countL = 0;
 }
-*/
 

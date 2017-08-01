@@ -10,7 +10,7 @@ void setup(){
   pinMode(eB, INPUT_PULLUP); //→
   attachInterrupt(digitalPinToInterrupt(eA), countL,CHANGE);
   attachInterrupt(digitalPinToInterrupt(eB), countL,CHANGE);
-  Serial.print("Start");
+  //Serial.print("Start");
 }
 
 void loop(){
@@ -41,6 +41,7 @@ void countL(){
   oldLA = newLA;
   oldLB = newLB;
   Serial.println(count);
+  count = 0;
   //Serial.print(' ');
   //Serial.print(newLA);
   //Serial.print(newLB);

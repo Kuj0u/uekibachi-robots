@@ -12,8 +12,9 @@ count = 0
 
 while 1 :
   data = s.readline()
+  count = count + int(data)
 #  if(data != 0) :
-  print(data)
+  print(count)
 
 #  if(oldA == oldB) :
 #    if(oldA != A) :

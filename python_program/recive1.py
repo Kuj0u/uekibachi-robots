@@ -18,7 +18,7 @@ while 1 :
   addL = (3 & data) - 2
   addR = (3 & (data / 100)) - 2
   countL = countL + addL
-  countR = countR + addR
+  countR = countR + (addR * 2)
 #  if(data != 0) :
   print("countL = %5d, countR = %5d, addL = %2d, addR = %2d, data = %4s" % (countL, countR, addL, addR, data))
 

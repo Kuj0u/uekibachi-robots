@@ -47,6 +47,9 @@ sokudo_Wheel_R_t2 = 0
 Target_x = 0
 Target_y = 0
 
+kakudo = 0
+diff_kakudo = 0
+
 Moter_R1_Pin = 23
 Moter_R2_Pin = 24
 Moter_L1_Pin = 25
@@ -100,6 +103,55 @@ def move_target(x, y):
         else :
             #走る
             run_cal(run_speed, 0)
+
+#姿勢の計算
+def shisei_cal() :
+    #とりあえず、位置と姿勢
+    global kakudo, diff_kakudo
+    v_x = [0,0]
+    v_y = [0,0]
+    tan = [0,0]
+    shisei_now = shisei_old
+    x_now = zahyou_x_old
+    y_now = zahyou_y_old
+    x_vir = math.cos(shisei_now)
+    y_vir = math.sin(shisei_now)
+    v_x[0] = x_vir
+    v_y[0] = y_vir
+    #目標までのベクトル
+    x_tar = Target_x - x_now
+    y_tar = Target_y - y_now
+    #単位ベクトル直すため正規化
+    vector_len = math.sqrt((x_tar * x_tar) + (y_tar * y_tar))
+    v_x[1] = x_tar / vector_len
+    v_y[1] = y_tar / vector_len
+    #内積と外積で角度と回転方向を計算
+    naiseki = v_x[0] * v_x[1] + v_y[0] * v_y[1]
+    gaiseki = v_x[0] * v_y[1] - v_y[0] * v_x[1]
+    diff_kakudo = (math.atan2(gaiseki, naiseki) * 180) / math.pi
+    ##自分の位置と目標の角度計算
+    #tan[0] = (math.atan(y_vir / x_vir) * 180.0) / math.pi
+    #tan[1] = (math.atan(y_tar / x_tar) * 180.0) / math.pi
+    #i = 0
+    #while i<2 :
+    #    if  v_x[i] > 0 :
+    #        if v_y[i] > 0 :
+    #            tan[i] = 180 - tan[i]
+    ##        else :
+    #            tan[i] = 180 - abs(tan[i] - 45) * 2
+    #    i+=1
+    #bunshi = (x_vir * y_tar) + (y_vir * x_tar)
+    #bunbo = (math.sqrt((x_vir * x_vir ) + (y_vir * y_vir))) * (math.sqrt((x_tar * x_tar) + (y_tar *y_tar)))
+    #print "分子 : " + str(bunshi)
+    #print "分母 : " + str(bunbo)
+    #tau = bunshi / bunbo
+    #print "tau : " +  str(tau),
+    #kakudo = math.acos(tau)
+    #diff_kakudo = tan[1] - tan[0]
+    #print "差分 %lf (%lf - %lf) " % (diff_kakudo, tan[1], tan[0])
+    #print " tan[0] : " + str(tan[0]) + " tan[1] " + str(tan[1]) + " diff_dig : " + str(kakudo)
+    #print "kakudo : " + str(kakudo)
+    rotation_run(diff_kakudo)
 
 def target_set(x,y):
     global Target_x, Traget_y

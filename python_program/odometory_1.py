@@ -44,6 +44,9 @@ sokudo_Wheel_R_t0 = 0
 sokudo_Wheel_R_t1 = 0
 sokudo_Wheel_R_t2 = 0
 
+Target_x = 0
+Target_y = 0
+
 Moter_R1_Pin = 23
 Moter_R2_Pin = 24
 Moter_L1_Pin = 25
@@ -97,6 +100,11 @@ def move_target(x, y):
         else :
             #走る
             run_cal(run_speed, 0)
+
+def target_set(x,y):
+    global Target_x, Traget_y
+    Target_x = x
+    Target_y = y
 
 def log_read(read_step) :
     global log_list_step_now
@@ -235,7 +243,7 @@ try:
                 else :
                     close_end()
             if flag == 1:
-                move_target(float(log_list[0]), float(log_list[1]))
+                move_target(float(target_xy[0]), float(target_xy[1]))
                 #目的地に到着してるか
                 if move_comp == 1:
                     flag =0

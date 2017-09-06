@@ -132,4 +132,4 @@ finally :
     print "END"
     motor_stop()
     GPIO.cleanup()
-    fileopen.close()
+    #fileopen.close()

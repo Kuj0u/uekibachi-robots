@@ -12,6 +12,8 @@ flag = 0
 status_step_now = 0
 move_comp = 0
 
+status_step_now = 0
+
 encoderdata = serial.Serial('/dev/ttyACM0',230400, timeout = 1000)
 countdata = 0
 count_L = 0
@@ -200,6 +202,21 @@ def run_PWM(speed_L, speed_R) :
 
 def motor_stop():
     time.sleep(0.001)
+
+#回転、引数はrad
+def rotation_run(Target_kakudo) :
+    global status_step_now
+    #Rad => Dig(わかりやすくするために)
+    #Target_kakudo = Target_kakudo * 180.0 / math.pi
+    #+-5degでないときは回す
+    if Target_kakudo > 5.0 :
+        run_cal(0.5,1)
+    elif Target_kakudo < -5.0 :
+        run_cal(0.5,-1)
+    #+-5degになったらとめる
+    else :
+        motor_stop()
+        status_step_now += 1
 
 def enc_count_L(pin) :
     global count_L, count_R, countdata, count_L_add, count_R_add

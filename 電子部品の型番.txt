@@ -1,3 +1,11 @@
+【ロータリエンコーダ】
+型番：E6A2-CW3C
+電圧：？
+電流：？
+茶→5V　青→GND
+黒→A　 白→B
+
+
 【温度・湿度センサ】
 型番：SEN11301P
 電圧：3.3V～5V
@@ -33,6 +41,8 @@
 電源定格：DC5V
 消費電流：1.3A
 仕様表URL：http://www.iodata.jp/product/pc/raspberrypi/ud-rp3/spec.htm
+USBインターフェースがある方がBCM39,40
+
 
 
 【arduino】
@@ -58,3 +68,23 @@ UnoにするかMegaにするか検討中　多分多分Uno二つになるとおもう
 仕様表：https://trac.switch-science.com/wiki/ArduinoMega
 ピン図：https://arduino-info.wikispaces.com/file/view/Mega2-900.jpg/421499040/Mega2-900.jpg
 ※20,21ピンはI2C通信で使うため実質4ピンしか割り込めない
+
+
+【配線】
+Arduino側：
+右側：黒→18 白→19
+左側：黒→2  白→3
+
+RaspberryPi3側：
+PWMモータ用
+R1→GPIO23 R2→GPIO24
+L1→GPIO25 L2→GPIO11
+
+温湿度
+未定
+
+土壌
+未定
+
+光量
+未定

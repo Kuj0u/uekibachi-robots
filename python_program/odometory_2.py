@@ -58,7 +58,7 @@ run_mode = 1
 
 #odometori file set
 date_now = datetime.datetime.today()
-fmt_filename = "log_odometory_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+fmt_filename = "anpan" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
 print fmt_filename
 odometori_file_w = open(fmt_filename, "w")
 odometori_file_a = open(fmt_filename, "a")
@@ -108,7 +108,7 @@ def keisan() :
         sokudo_Wheel_R_t0 = sokudo_Wheel_R
         sokudo_old = sokudo
         shisei_old = shisei
-        now_distance += math.sqrt((zahyou_x - zahyou_x_old) * (zahyou_x - zahyou_x_old) + (zahyou_y - zahyou_y_old) * (zahyou_y - zahyou_y_old))
+       # now_distance += math.sqrt((zahyou_x - zahyou_x_old) * (zahyou_x - zahyou_x_old) + (zahyou_y - zahyou_y_old) * (zahyou_y - zahyou_y_old))
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
 
@@ -132,6 +132,7 @@ Moter_R2_PWM.start(0)
 
 # event wait
 try:
+    print "計測開始"
     while True:
         enc_count_L()
         time.sleep(0.001)

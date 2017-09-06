@@ -577,7 +577,7 @@ try:
                 else :
                     close_end()
             if flag == 1:
-                move_target(float(log_list[0]), float(log_list[1]))
+                move_target(float(target_xy[0]), float(target_xy[1]))
                 #目的地に到着してるか
                 if move_comp == 1:
                     flag =0

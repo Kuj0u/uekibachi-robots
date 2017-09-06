@@ -72,6 +72,30 @@ fileopen.close()
 log_list_step_now = 5   #最初はゴチャゴチャしてるから５から
 print "読み込み完了"
 
+def move_target(x, y):
+    global status_step_now, move_comp
+    move_comp = 0
+    if status_step_now == 0:
+        target_set(x,y)
+        status_step_now += 1
+    if status_step_now == 1 :
+        #shisei_calの中で回転までやってます。
+        shisei_cal()
+        #shisei_cal(厳密にはrotation_run)のなかでstatus =　次ってやってます。
+    if status_step_now == 2 :
+        #目標までの距離を計算
+        target_distance_cal()
+        status_step_now += 1
+    if status_step_now == 3 :
+        #目標距離まで走ったら
+        if Target_distance - now_distance < 0 :
+            motor_stop()
+
+        #目標距離まで届いていなければ
+        else :
+            #走る
+            run_cal(run_speed, 0)
+
 def log_read(read_step) :
     global log_list_step_now
     log_list_step_now += 1

@@ -73,6 +73,7 @@ log_list_step_now = 5   #最初はゴチャゴチャしてるから５から
 print "読み込み完了"
 
 def log_read(read_step) :
+    global log_list_step_now
     log_list_step_now += 1
     log_now = log_list[read_step].split('\t')
     #target_set(float(log_now[0], float(log_now[1]))

@@ -8,6 +8,7 @@ import serial
 import socket
 
 log_file_name = 'log_odometori.txt'
+flag = 0
 
 encoderdata = serial.Serial('/dev/ttyACM0',230400, timeout = 1000)
 countdata = 0
@@ -104,6 +105,9 @@ def run_PWM(speed_L, speed_R) :
     #Moter_R1_PWM.ChangeDutyCycle(0)
     #Moter_R2_PWM.ChangeDutyCycle(0)
 
+def motor_stop():
+    time.sleep(0.001)
+
 def enc_count_L(pin) :
     global count_L, count_R, countdata, count_L_add, count_R_add
     countdata = int(encoderdata.readline())
@@ -169,7 +173,7 @@ Moter_R2_PWM.start(0)
 
 # event wait
 try:
-    global Target_distance, flag,
+    global Target_distance, flag
     print_time_old = time.time()
     while True:
         if time.time() - print_time_old > 0.1 :

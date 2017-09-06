@@ -56,6 +56,14 @@ PWM_power_R = 0
 
 run_mode = 1
 
+#odometori file set
+date_now = datetime.datetime.today()
+fmt_filename = "log_odometory_" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+print fmt_filename
+odometori_file_w = open(fmt_filename, "w")
+odometori_file_a = open(fmt_filename, "a")
+odometori_file_w.close()
+
 def motor_stop():
     time.sleep(0.001)
 

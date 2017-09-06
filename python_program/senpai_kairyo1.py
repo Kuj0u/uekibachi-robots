@@ -27,34 +27,27 @@ import datetime
 import serial
 import socket
 
-#GPIO_PIN_NO
-GPIO_ENC_LA = 26
-GPIO_ENC_LB = 19
-GPIO_ENC_RA = 20
-GPIO_ENC_RB = 16
+encoderdata = serial.Serial('/dev/ttyACM0',230400, timeout = 1000)
+
 
 #counter
+countdata = 0
 count_L = 0
 count_R = 0
-flag_pin_L = 0
-flag_pin_R = 0
-new_LA = 0
-new_LB = 0
-new_RA = 0
-new_RB = 0
-old_LA = 0
-old_LB = 0
-old_RA = 0
-old_RB = 0
 count_L_add = 0
 count_R_add = 0
-gyaku = -1
+
 
 #keisan
+Enc_P = 800.0  #200パルスの四逓倍
+Gear = 2.0  #ギア比
+Wheel_W = 100.0 / 1000.0 # メートル表記 車輪の半径
+Tread = 356.6 / 1000.0 # メートル表記　車輪間距離
 Enc_P = 800.0
 Gear = 2.0
-Wheel_W = 61.5 / 1000.0 # メートル表記
+Wheel_W = 62.8 / 1000.0 # メートル表記
 Tread = 288.0 / 1000.0 # メートル表記
+>>>>>>> 4b6b39117873a9f569d664f26e28b512facc865b
 time_old = time.time()
 time_interval = 0.1
 time_interval_dt = 0
@@ -168,7 +161,7 @@ def move_target(x, y):
         #目標距離まで走ったら
         if Target_distance - now_distance < 0 :
             motor_stop()
-            
+
             #精密ターゲットが設定されている場合
             if Target_precision == 1 :
                 #目標とズレが少ない場合
@@ -389,7 +382,7 @@ def run_PWM(speed_L, speed_R) :
         Duty_L2 = abs(speed_L)
     if speed_R >= 0 :
         Duty_R1 = speed_R
-        Duty_R2 = 0 
+        Duty_R2 = 0
     elif speed_R < 0 :
         Duty_R1 = 0
         Duty_R2 = abs(speed_R)
@@ -414,7 +407,7 @@ def motor_stop() :
 def run_cal(speed, way) :
     #回転方向からホイールの速度を定める
     global PID_time_old, PID_I_L, PID_I_R, PID_L, PID_R, run_way
-    if way is 0 : 
+    if way is 0 :
         Target_speed_L = speed
         Target_speed_R = speed
         run_way= "直進"
@@ -422,7 +415,7 @@ def run_cal(speed, way) :
         Target_speed_L = speed
         Target_speed_R = speed * -1
         run_way= "右回転"
-    elif way is 1 : 
+    elif way is 1 :
         Target_speed_L = speed * -1
         Target_speed_R = speed
         run_way= "左回転"
@@ -489,59 +482,16 @@ def close_end() :
     exit()
 
 
-# encoder count bimyo
+# encoder count 改良
 def enc_count_L(pin) :
-    global count_L, flag_pin_L, new_LA, new_LB, old_LA, old_LB, count_L_add
-    volt = GPIO.input(pin)
-    if(GPIO_ENC_LA == pin) :
-        new_LA = volt
-    else :
-        new_LB = volt
-    if(flag_pin_L == pin) :
-        #print "逆回転だぜ！"
-        count_L_add *= -1
-    elif(old_LA == old_LB) :
-        if(old_LA != new_LA) :
-            count_L_add = 1
-        else :
-            count_L_add = -1
-    else :
-        if(old_LA == new_LA) :
-            count_L_add = 1
-        else :
-            count_L_add = -1
-    count_L += count_L_add * gyaku
-    old_LA = new_LA
-    old_LB = new_LB
-    flag_pin_L = pin
+    global count_L, count_R, countdata, count_L_add, count_R_add
+    countdata = int(encoderdata.readline())
+    count_L_add = (3 & countdata) - 2
+    count_R_add = (3 & (data / 100)) - 2
+    count_L += count_L_add
+    count_R += count_R_add
     keisan()
 
-# encoder count bimyo
-def enc_count_R(pin) :
-    global count_R, flag_pin_R, new_RA, new_RB, old_RA, old_RB, count_R_add
-    volt = GPIO.input(pin)
-    if(GPIO_ENC_RA == pin) :
-        new_RA = volt
-    else :
-        new_RB = volt
-    if(flag_pin_R == pin) :
-        #print "逆回転だぜ！"
-        count_R_add *= -1
-    elif(old_RA == old_RB) :
-        if(old_RA != new_RA) :
-            count_R_add = 1
-        else :
-            count_R_add = -1
-    else :
-        if(old_RA == new_RA) :
-            count_R_add = 1
-        else :
-            count_R_add = -1
-    count_R += count_R_add
-    old_RA = new_RA
-    old_RB = new_RB
-    flag_pin_R = pin
-    keisan()
 
 def keisan() :
     global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_Wheel_L, sokudo_Wheel_R, sokudo_Wheel_L_t0, sokudo_Wheel_L_t1, sokudo_Wheel_L_t2, sokudo_Wheel_R_t0, sokudo_Wheel_R_t1, sokudo_Wheel_R_t2, now_distance
@@ -577,16 +527,10 @@ def keisan() :
         now_distance += math.sqrt((zahyou_x - zahyou_x_old) * (zahyou_x - zahyou_x_old) + (zahyou_y - zahyou_y_old) * (zahyou_y - zahyou_y_old))
         zahyou_x_old = zahyou_x
         zahyou_y_old = zahyou_y
- 
+
 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
-
-#setup encoder
-GPIO.setup(GPIO_ENC_LA, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(GPIO_ENC_LB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(GPIO_ENC_RA, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(GPIO_ENC_RB, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #setup moter PWM
 GPIO.setup(Moter_L1_Pin, GPIO.OUT)
@@ -602,12 +546,6 @@ Moter_L2_PWM.start(0)
 Moter_R1_PWM.start(0)
 Moter_R2_PWM.start(0)
 
-# event setup
-GPIO.add_event_detect(GPIO_ENC_LA, GPIO.BOTH, enc_count_L)
-GPIO.add_event_detect(GPIO_ENC_LB, GPIO.BOTH, enc_count_L)
-GPIO.add_event_detect(GPIO_ENC_RA, GPIO.BOTH, enc_count_R)
-GPIO.add_event_detect(GPIO_ENC_RB, GPIO.BOTH, enc_count_R)
-
 # event wait
 try:
     global Target_distance, now_distance, flag, ima
@@ -620,7 +558,7 @@ try:
             print "現在座標 x:%lf y:%lf" % (zahyou_x_old, zahyou_y_old)
             print "目標座標 x:%lf y:%lf" % (Target_x, Target_y)
             print "現在姿勢 : %lf" % (shisei_old*180.0/math.pi)
-            print "偏差角度 : %lf" % diff_kakudo 
+            print "偏差角度 : %lf" % diff_kakudo
             print "目標との距離 : %lf (%lf - %lf)" % (Target_distance - now_distance, Target_distance, now_distance)
             print "進行方向:", run_way
             print "PWM_POWER L:%lf R:%lf" % (pwm_power_L, pwm_power_R)
@@ -706,4 +644,3 @@ finally :
     motor_stop()
     GPIO.cleanup()
     fileopen.close()
-

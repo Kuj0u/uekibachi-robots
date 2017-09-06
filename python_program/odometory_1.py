@@ -203,61 +203,6 @@ try:
                 if move_comp == 1:
                     flag =0
         #demoもーど
-        elif run_mode == 2:
-            #光のmaxを出す
-            if flag == 0:
-                #time.sleep(5)
-                log_to_single_light(log_list)
-                first_pos = light_max_pos(0, 0, 0)
-                move_target(first_pos[0], first_pos[1])
-                flag = 1
-            #senser読み込み
-            if flag == 1:
-                serch_light_lock = 0
-                motor_stop()
-                #udp_sensor_recv
-                sensor_info()
-                #設定より値が下回ったら、、、特に水分
-                if soil_water > soil_water_limit :
-                    flag = 2
-                    ima = "水"
-                elif light < light_limit :
-                    flag = 3
-                    ima = "光"
-                else :
-                    ima = "寝"
-                    flag = 1
-                    #time.sleep(3)
-                print ima
-            #水分補給動作
-            if flag == 2:
-                #ターゲットに移動
-                move_target(water_pos[0], water_pos[1])
-                #到着したら
-                if move_comp == 1:
-                    motor_stop()
-                    time.sleep(10)
-                    flag = 3
-            #光ある地へ
-            if flag == 3:
-                if serch_light_lock == 0:
-                    serch_light_lock = 1
-                    light_target_new = [0, 0]
-                    #現在位置周辺がlightMAX時の座標
-                    if light_scope(zahyou_x_old, zahyou_y_old) == 1:
-                        #今から離れた地点でlight_max探す
-                        light_target_new = light_max_pos(1, zahyou_x_old, zahyou_y_old)
-                    else :
-                        #普通にlistからlight_max探す
-                        light_target_new = light_max_pos(0, zahyou_x_old, zahyou_y_old)
-                #指定地点へ移動
-                move_target(light_target_new[0],light_target_new[1])
-                #到着したら
-                if move_comp == 1:
-                    serch_light_lock = 0
-                    motor_stop()
-                    #flagを１に
-                    flag = 1
         time.sleep(0.001)
 
 finally :

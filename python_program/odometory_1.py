@@ -9,6 +9,8 @@ import socket
 
 log_file_name = 'log_odometori.txt'
 flag = 0
+status_step_now = 0
+move_comp = 0
 
 encoderdata = serial.Serial('/dev/ttyACM0',230400, timeout = 1000)
 countdata = 0

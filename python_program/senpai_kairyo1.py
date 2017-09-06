@@ -275,33 +275,32 @@ def log_read(read_step) :
     return log_now
 
 #list内部から目的の値(区切り)のみのlistに変換
-def single_list(list_data,list_range, basho):
-    i = 0
-    single_list_val = range(100)
-    for i in range(list_range):
-        readline_val = list_data[i].split("\t")
-        #temp_light = str(readline_val[basho])
-        temp_light = float(readline_val[basho])
-        #temp_light = int(temp_light) / 1
-        #temp_light = int(temp_light)
-        single_list_val[i] = temp_light
-    return single_list_val
+#def single_list(list_data,list_range, basho):
+#    i = 0
+#    for i in range(list_range):
+#        readline_val = list_data[i].split("\t")
+#        #temp_light = str(readline_val[basho])
+#        temp_light = float(readline_val[basho])
+#        #temp_light = int(temp_light) / 1
+#        #temp_light = int(temp_light)
+#        single_list_val[i] = temp_light
+#    return single_list_val
 
 #lightのみのlistに
-def log_to_single_light(loglist):
-    global light_list
-    light_list = single_list(loglist, 100, 2)
+#def log_to_single_light(loglist):
+#    global light_list
+#    light_list = single_list(loglist, 100, 2)
 
 #現在地点がlistmaxに近いかどうか
-def light_scope(x,y):
-    now_pos = now_pos_02(x,y)
-    light_max_xy = light_max_pos(0,now_pos[0], now_pos[1])
-    i = 0
-    if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] + light_distance_scope) :
-        i = 1
-        if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] + light_distance_scope) :
-            return 1
-    return 0
+#def light_scope(x,y):
+#    now_pos = now_pos_02(x,y)
+#    light_max_xy = light_max_pos(0,now_pos[0], now_pos[1])
+#    i = 0
+#    if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] + light_distance_scope) :
+#        i = 1
+#        if (light_max_xy[i] - light_distance_scope < now_pos[i] and now_pos[i] <light_max_xy[i] + light_distance_scope) :
+#            return 1
+#    return 0
 
 #現在地点を0.2単位で返す
 def now_pos_02(x, y):
@@ -320,46 +319,44 @@ def now_pos_02(x, y):
 
 
 #light_max_xy
-def light_max_pos(pass_flag, x, y):
-    #maxの値を参照
-    if pass_flag == 0:
-        light_max_val = max(light_list)
-    #当該区域の明るさを0にして別の明るさを求める
-    else :
-        #一時的な照度リストを取得
-        light_list_temp = light_list
-        #今の場所0.2単位で取得
-        now_pos_list = now_pos_02(x,y)
-        #座標系をlist番号に変更する
-        x = now_pos_list[0] * 5
-        y = now_pos_list[1] * 5
-        x = int(x)
-        y = int(y)
-        print x
-        print y
-        i = 0
-        j = 0
-        #該当区域(縦横0-9のみ範囲外は無視)
-        #for文よくないけど、しらん。気になったら変える。
-        for i in grid_range:
-            if (0 <= x - i and x + i <= 9):
-                for j in grid_range:
-                    if (0 <= y - j and y + j <= 9):
-                        list_num = (int(y) * 10) + int(x)
-                        #ゼロ埋め
-                        light_list_temp[list_num] = int(0)
-        #修正をしたlistでmaxを探す
-        light_max_val = max(light_list)
-        print light_max_val
-    #maxの場所を探す
-    xy_num = light_list.index(light_max_val)
-    #list番号を座標系に戻す
-    pos_x = int(xy_num) % 10
-    pos_y = int(xy_num) / 10
-    pos_x = pos_x * 0.2
-    pos_y = pos_y * 0.2
-    light_max_pos_xy = [pos_x, pos_y]
-    return light_max_pos_xy
+#def light_max_pos(pass_flag, x, y):
+#    #maxの値を参照
+#    if pass_flag == 0:
+#        light_max_val = max(light_list)
+#    #当該区域の明るさを0にして別の明るさを求める
+#    else :
+#        light_list_temp = light_list
+#        #今の場所0.2単位で取得
+#        now_pos_list = now_pos_02(x,y)
+#        #座標系をlist番号に変更する
+#        x = now_pos_list[0] * 5
+#        y = now_pos_list[1] * 5
+#        x = int(x)
+#        y = int(y)
+#        print x
+#        print y
+#        j = 0
+#        #該当区域(縦横0-9のみ範囲外は無視)
+#        #for文よくないけど、しらん。気になったら変える。
+#        for i in grid_range:
+#            if (0 <= x - i and x + i <= 9):
+#                for j in grid_range:
+#                    if (0 <= y - j and y + j <= 9):
+#                        list_num = (int(y) * 10) + int(x)
+#                        #ゼロ埋め
+#                        light_list_temp[list_num] = int(0)
+#        #修正をしたlistでmaxを探す
+#        light_max_val = max(light_list)
+#        print light_max_val
+#    #maxの場所を探す
+#    xy_num = light_list.index(light_max_val)
+#    #list番号を座標系に戻す
+#    pos_x = int(xy_num) % 10
+#    pos_y = int(xy_num) / 10
+#    pos_x = pos_x * 0.2
+#    pos_y = pos_y * 0.2
+#    light_max_pos_xy = [pos_x, pos_y]
+#    return light_max_pos_xy
 
 #PWM信号変換
 def run_PWM(speed_L, speed_R) :
@@ -582,61 +579,59 @@ try:
                 if move_comp == 1:
                     flag =0
         #demoもーど
-        elif run_mode == 2:
-            #光のmaxを出す
-            if flag == 0:
-                #time.sleep(5)
-                log_to_single_light(log_list)
-                first_pos = light_max_pos(0, 0, 0)
-                move_target(first_pos[0], first_pos[1])
-                flag = 1
-            #senser読み込み
-            if flag == 1:
-                serch_light_lock = 0
-                motor_stop()
-                #udp_sensor_recv
-                sensor_info()
-                #設定より値が下回ったら、、、特に水分
-                if soil_water > soil_water_limit :
-                    flag = 2
-                    ima = "水"
-                elif light < light_limit :
-                    flag = 3
-                    ima = "光"
-                else :
-                    ima = "寝"
-                    flag = 1
-                    #time.sleep(3)
-                print ima
-            #水分補給動作
-            if flag == 2:
-                #ターゲットに移動
-                move_target(water_pos[0], water_pos[1])
-                #到着したら
-                if move_comp == 1:
-                    motor_stop()
-                    time.sleep(10)
-                    flag = 3
-            #光ある地へ
-            if flag == 3:
-                if serch_light_lock == 0:
-                    serch_light_lock = 1
-                    light_target_new = [0, 0]
-                    #現在位置周辺がlightMAX時の座標
-                    if light_scope(zahyou_x_old, zahyou_y_old) == 1:
-                        #今から離れた地点でlight_max探す
-                        light_target_new = light_max_pos(1, zahyou_x_old, zahyou_y_old)
-                    else :
-                        #普通にlistからlight_max探す
-                        light_target_new = light_max_pos(0, zahyou_x_old, zahyou_y_old)
-                #指定地点へ移動
-                move_target(light_target_new[0],light_target_new[1])
-                #到着したら
-                if move_comp == 1:
-                    serch_light_lock = 0
-                    motor_stop()
-                    #flagを１に
-                    flag = 1
+#        elif run_mode == 2:
+#            #光のmaxを出す
+#            if flag == 0:
+#                #time.sleep(5)
+#                first_pos = light_max_pos(0, 0, 0)
+#                move_target(first_pos[0], first_pos[1])
+#                flag = 1
+#            #senser読み込み
+#            if flag == 1:
+#                serch_light_lock = 0
+#                motor_stop()
+#                #udp_sensor_recv
+#                sensor_info()
+#                #設定より値が下回ったら、、、特に水分
+#                if soil_water > soil_water_limit :
+#                    flag = 2
+#                    ima = "水"
+#                elif light < light_limit :
+#                    ima = "光"
+#                else :
+#                    ima = "寝"
+#                    flag = 1
+#                    #time.sleep(3)
+#                print ima
+#            #水分補給動作
+#            if flag == 2:
+#                #ターゲットに移動
+#                move_target(water_pos[0], water_pos[1])
+#                #到着したら
+#                if move_comp == 1:
+#                    motor_stop()
+#                    time.sleep(10)
+#                    flag = 3
+#            #光ある地へ
+#            if flag == 3:
+#                if serch_light_lock == 0:
+#                    serch_light_lock = 1
+#                    light_target_new = [0, 0]
+#                    #現在位置周辺がlightMAX時の座標
+#                    if light_scope(zahyou_x_old, zahyou_y_old) == 1:
+#                        #今から離れた地点でlight_max探す
+#                        light_target_new = light_max_pos(1, zahyou_x_old, zahyou_y_old)
+#                    else :
+#                        #普通にlistからlight_max探す
+#                        light_target_new = light_max_pos(0, zahyou_x_old, zahyou_y_old)
+#                #指定地点へ移動
+#                move_target(light_target_new[0],light_target_new[1])
+#                #到着したら
+#                if move_comp == 1:
+#                    serch_light_lock = 0
+#                    motor_stop()
+#                    #flagを１に
+#                    flag = 1
         time.sleep(0.001)
 
 finally :

@@ -62,6 +62,9 @@ speed_MAX = 10.8
 pwm_power_L = 0
 PWM_power_R = 0
 
+Target_distance = 0
+now_distance = 0
+
 run_mode = 1
 
 #odometori file set
@@ -105,6 +108,12 @@ def move_target(x, y):
         else :
             #走る
             run_cal(run_speed, 0)
+
+#目標までの距離計算
+def target_distance_cal() :
+    global Target_distance, now_distance
+    Target_distance =  math.sqrt((Target_x - zahyou_x_old) * (Target_x - zahyou_x_old) + (Target_y - zahyou_y_old) * (Target_y - zahyou_y_old))
+    now_distance
 
 #姿勢の計算
 def shisei_cal() :

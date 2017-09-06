@@ -13,7 +13,7 @@ log_file_name = 'log_odometori.txt'
 #走行モード
 #1:log追従モード
 #2:sensor使用、環境に応じて移動
-run_mode = 2
+run_mode = 1
 
 #給水ステーションの座標
 water_pos = [1.0,1.0]
@@ -47,7 +47,6 @@ Enc_P = 800.0
 Gear = 2.0
 Wheel_W = 62.8 / 1000.0 # メートル表記
 Tread = 288.0 / 1000.0 # メートル表記
->>>>>>> 4b6b39117873a9f569d664f26e28b512facc865b
 time_old = time.time()
 time_interval = 0.1
 time_interval_dt = 0
@@ -269,6 +268,7 @@ def target_set(x, y):
 
 #log読み取り
 def log_read(read_step) :
+    global log_list_step_now
     log_list_step_now += 1
     log_now = log_list[read_step].split('\t')
     #target_set(float(log_now[0], float(log_now[1]))
@@ -558,9 +558,9 @@ try:
             print "偏差角度 : %lf" % diff_kakudo
             print "目標との距離 : %lf (%lf - %lf)" % (Target_distance - now_distance, Target_distance, now_distance)
             print "進行方向:", run_way
-            print "PWM_POWER L:%lf R:%lf" % (pwm_power_L, pwm_power_R)
-            print "センサ　現在　light:%lf mizu:%lf" % (light, soil_water)
-            print "センサ　設定　light:%lf mizu:%lf" % (light_limit, soil_water_limit)
+           # print "PWM_POWER L:%lf R:%lf" % (pwm_power_L, pwm_power_R)
+            #print "センサ　現在　light:%lf mizu:%lf" % (light, soil_water)
+           # print "センサ　設定　light:%lf mizu:%lf" % (light_limit, soil_water_limit)
             print "行動:",ima
         #追従モード
         if run_mode == 1:

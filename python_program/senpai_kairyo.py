@@ -13,7 +13,7 @@ log_file_name = 'log_odometori.txt'
 #走行モード
 #1:log追従モード
 #2:sensor使用、環境に応じて移動
-run_mode = 2
+run_mode = 1
 
 #給水ステーションの座標
 water_pos = [1.0,1.0]
@@ -39,17 +39,14 @@ count_R_add = 0
 
 
 #keisan
-<<<<<<< HEAD
 Enc_P = 800.0  #200パルスの四逓倍
 Gear = 2.0  #ギア比
 Wheel_W = 100.0 / 1000.0 # メートル表記 車輪の半径
 Tread = 356.6 / 1000.0 # メートル表記　車輪間距離
-=======
 Enc_P = 800.0
 Gear = 2.0
 Wheel_W = 62.8 / 1000.0 # メートル表記
 Tread = 288.0 / 1000.0 # メートル表記
->>>>>>> 4b6b39117873a9f569d664f26e28b512facc865b
 time_old = time.time()
 time_interval = 0.1
 time_interval_dt = 0
@@ -271,6 +268,7 @@ def target_set(x, y):
 
 #log読み取り
 def log_read(read_step) :
+    global log_list_step_now
     log_list_step_now += 1
     log_now = log_list[read_step].split('\t')
     #target_set(float(log_now[0], float(log_now[1]))

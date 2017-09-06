@@ -58,7 +58,7 @@ run_mode = 1
 
 #odometori file set
 date_now = datetime.datetime.today()
-fmt_filename = "anpan" + str(date_now.strftime("%Y-%m-%d_%H:%M:%S")) + ".txt"
+fmt_filename = "anpanman.txt"
 print fmt_filename
 odometori_file_w = open(fmt_filename, "w")
 odometori_file_a = open(fmt_filename, "a")
@@ -70,6 +70,7 @@ def motor_stop():
 def enc_count_L() :
     global count_L, count_R, countdata, count_L_add, count_R_add
     countdata = int(encoderdata.readline())
+    #print "debug"
     count_L_add = (3 & countdata) - 2
     count_R_add = (3 & (countdata / 100)) - 2
     count_L += count_L_add
@@ -80,37 +81,37 @@ def enc_count_L() :
 def keisan() :
     global time_old, count_L, count_R, kakusokudo_old, shisei_old, zahyou_x_old, zahyou_y_old, sokudo_old, sokudo_Wheel_L, sokudo_Wheel_R, sokudo_Wheel_L_t0, sokudo_Wheel_L_t1, sokudo_Wheel_L_t2, sokudo_Wheel_R_t0, sokudo_Wheel_R_t1, sokudo_Wheel_R_t2, now_distance
     time_now = time.time()
-    if(time_now - time_old > time_interval) :
-        time_interval_dt = time_now - time_old
-        kakudo_L = (2.0 * math.pi * count_L) / Enc_P
-        kakudo_R = (2.0 * math.pi * count_R) / Enc_P
-        kakusokudo_L = kakudo_L / Gear / time_interval_dt
-        kakusokudo_R = kakudo_R / Gear / time_interval_dt
-        sokudo_Wheel_L = kakusokudo_L * Wheel_W
-        sokudo_Wheel_R = kakusokudo_R * Wheel_W
-        sokudo = (sokudo_Wheel_L + sokudo_Wheel_R) / 2.0
-        kakusokudo = (kakusokudo_R - kakusokudo_L) * Wheel_W / Tread
-        shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
-        zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
-        zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
-        file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
-        odometori_file_a.write(file_add)
-        #odometori_file_a.close()
-        count_L = 0
-        count_R = 0
-        time_old = time_now
-        kakusokudo_old = kakusokudo
-        sokudo_Wheel_L_t2 = sokudo_Wheel_L_t1
-        sokudo_Wheel_L_t1 = sokudo_Wheel_L_t0
-        sokudo_Wheel_L_t0 = sokudo_Wheel_L
-        sokudo_Wheel_R_t2 = sokudo_Wheel_R_t1
-        sokudo_Wheel_R_t1 = sokudo_Wheel_R_t0
-        sokudo_Wheel_R_t0 = sokudo_Wheel_R
-        sokudo_old = sokudo
-        shisei_old = shisei
-       # now_distance += math.sqrt((zahyou_x - zahyou_x_old) * (zahyou_x - zahyou_x_old) + (zahyou_y - zahyou_y_old) * (zahyou_y - zahyou_y_old))
-        zahyou_x_old = zahyou_x
-        zahyou_y_old = zahyou_y
+    #if(time_now - time_old > time_interval) :
+    time_interval_dt = time_now - time_old
+    kakudo_L = (2.0 * math.pi * count_L) / Enc_P
+    kakudo_R = (2.0 * math.pi * count_R) / Enc_P
+    kakusokudo_L = kakudo_L / Gear / time_interval_dt
+    kakusokudo_R = kakudo_R / Gear / time_interval_dt
+    sokudo_Wheel_L = kakusokudo_L * Wheel_W
+    sokudo_Wheel_R = kakusokudo_R * Wheel_W
+    sokudo = (sokudo_Wheel_L + sokudo_Wheel_R) / 2.0
+    kakusokudo = (kakusokudo_R - kakusokudo_L) * Wheel_W / Tread
+    shisei = (kakusokudo + kakusokudo_old) * time_interval_dt / 2.0 + shisei_old
+    zahyou_x = (sokudo * math.cos(shisei) + sokudo_old * math.cos(shisei_old)) * time_interval_dt / 2.0 + zahyou_x_old
+    zahyou_y = (sokudo * math.sin(shisei) + sokudo_old * math.sin(shisei_old)) * time_interval_dt / 2.0 + zahyou_y_old
+    file_add = str(zahyou_x) + "\t" + str(zahyou_y) + "\t" + str(shisei) + "\n"
+    odometori_file_a.write(file_add)
+    #odometori_file_a.close()
+    count_L = 0
+    count_R = 0
+    time_old = time_now
+    kakusokudo_old = kakusokudo
+    sokudo_Wheel_L_t2 = sokudo_Wheel_L_t1
+    sokudo_Wheel_L_t1 = sokudo_Wheel_L_t0
+    sokudo_Wheel_L_t0 = sokudo_Wheel_L
+    sokudo_Wheel_R_t2 = sokudo_Wheel_R_t1
+    sokudo_Wheel_R_t1 = sokudo_Wheel_R_t0
+    sokudo_Wheel_R_t0 = sokudo_Wheel_R
+    sokudo_old = sokudo
+    shisei_old = shisei
+   # now_distance += math.sqrt((zahyou_x - zahyou_x_old) * (zahyou_x - zahyou_x_old) + (zahyou_y - zahyou_y_old) * (zahyou_y - zahyou_y_old))
+    zahyou_x_old = zahyou_x
+    zahyou_y_old = zahyou_y
 
 
 # GPIO setup
@@ -131,14 +132,15 @@ Moter_R1_PWM.start(0)
 Moter_R2_PWM.start(0)
 
 # event wait
-try:
-    print "計測開始"
-    while True:
-        enc_count_L()
-        time.sleep(0.001)
+print "計測開始"
+while True:
+   # print "読み取って"
+    enc_count_L()
+   # print "%d" % (countdata)
+    time.sleep(0.01)
 
-finally :
-    print "END"
-    motor_stop()
-    GPIO.cleanup()
-    #fileopen.close()
+#finally :
+#    print "END"
+#    motor_stop()
+#    GPIO.cleanup()
+#    #fileopen.close()
